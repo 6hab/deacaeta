@@ -1,12 +1,16 @@
 // Import neccessary modules and configure environment variables
 import express from "express";
+import cors from "cors"
 import dotenv from "dotenv";
 import fetch from "node-fetch";
-import { title } from "node:process";
-import { it } from "node:test";
 dotenv.config();
 
 const app = express();
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+});
 
 // Set the port number from environment variables or default to 3000
 const port = process.env.PORT ?? 3000;
@@ -16,6 +20,7 @@ const api_key = process.env.YOUTUBE_API_KEY;
 
 // Route PLAYLIST_ID
 const playlist_id = process.env.YOUTUBE_PLAYLIST_ID;
+
 
 
 // Define a route to respond with a JSON object containing project and developer infos (optional)
