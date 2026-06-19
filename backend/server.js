@@ -20,7 +20,11 @@ const api_key = process.env.YOUTUBE_API_KEY;
 // Route PLAYLIST_ID
 const playlist_id = process.env.YOUTUBE_PLAYLIST_ID;
 
-
+// Verification de la config de la clé API et de l'id de playlist
+if (!api_key || !playlist_id) {
+    console.error(`Config incomplet : ${ !api_key ? 'YOUTUBE_API_KEY' : 'YOUTUBE_PLAYLIST_ID'} manquant`);
+    process.exit(1);
+}
 
 // Define a route to respond with a JSON object containing project and developer infos (optional)
 app.get("/", (req, res) => {
