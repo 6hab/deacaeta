@@ -1,6 +1,5 @@
 // Import neccessary modules and configure environment variables
 import express from "express";
-import cors from "cors"
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 dotenv.config();
@@ -47,6 +46,10 @@ app.get("/coolsongs", async (req, res) => {
                 const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlist_id}&key=${api_key}${pageToken ? '&pageToken=' + pageToken : ''}`)
                 const data = await response.json();
 
+                if (!response.ok) {
+                    throw new  Error(`Youtube API error ${response.status}: ${data.error?.message ?? 'Erreur inconnue'}`);
+                }
+
                 const songs = data.items.map((item) => {
                     return {
                         publish_date: item.snippet.publishedAt,
@@ -56,8 +59,7 @@ app.get("/coolsongs", async (req, res) => {
                         channel_title: item.snippet.videoOwnerChannelTitle,
                     }
                 })
-                allSongs = [...allSongs, ...songs];
-                lastFetchTime = Date.now();
+                allSongs = [...allSongs, ...songs]; 
 
                 if (data.nextPageToken) {
                     pageToken = data.nextPageToken;
@@ -67,10 +69,19 @@ app.get("/coolsongs", async (req, res) => {
                 }
             }
 
+            lastFetchTime = Date.now();
             cachedSongs = allSongs;
             res.json(allSongs);
-        } catch {
-            res.status(500).json({ error: "Erreur 500" });
+        } catch (error) {
+            console.error(error);
+
+            if (cachedSongs !== null){
+                res.json(cachedSongs)
+            }
+            else {
+                res.status(503).json({ error: "Le service est temporairement indisponible. Réessayer plus tard." });
+            }
+            
         }
     }
 })
