@@ -3,9 +3,9 @@ import { useState, useEffect } from "react"
 
 interface Song {
   title: string,
-  channel_title: string
+  uploader: string
   cover: string,
-  //video_id: string,
+  video_id?: string,
 }
 
 export default function App() {
@@ -22,7 +22,7 @@ export default function App() {
     <div>
       <h1>Deacaeta</h1>
       {songs.map((song) => (
-        <SongCard title={song.title} channel_title={song.channel_title} cover={song.cover}/>
+        <SongCard title={song.title} uploader={song.uploader} cover={song.cover}/>
       ))}
     </div>
   );

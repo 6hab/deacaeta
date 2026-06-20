@@ -2,6 +2,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
+import mysql from "mysql2/promise";
+
 dotenv.config();
 
 const app = express();
@@ -14,10 +16,8 @@ app.use((req, res, next) => {
 // Set the port number from environment variables or default to 3000
 const port = process.env.PORT ?? 3000;
 
-// Route API_Key
+// API_Key et PLAYLIST_ID
 const api_key = process.env.YOUTUBE_API_KEY;
-
-// Route PLAYLIST_ID
 const playlist_id = process.env.YOUTUBE_PLAYLIST_ID;
 
 // Verification de la config de la clé API et de l'id de playlist
@@ -26,7 +26,125 @@ if (!api_key || !playlist_id) {
     process.exit(1);
 }
 
-// Define a route to respond with a JSON object containing project and developer infos (optional)
+
+function isDbInfosValueNull(envVar){
+    return !envVar.value;
+}
+const dbInfos = [
+    { name: 'DB_HOST', value: process.env.DB_HOST },
+    { name: 'DB_USER', value: process.env.DB_USER },
+    { name: 'DB_PASSWORD', value: process.env.DB_PASSWORD },
+    { name: 'DB_NAME', value: process.env.DB_NAME }
+].filter(isDbInfosValueNull);
+
+if (dbInfos.length > 0) {
+    dbInfos.forEach((dbInfo) => {
+        console.error(`Config incomplet : ${dbInfo.name} manquant`);
+    });
+    process.exit(1);
+}
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+});
+
+
+// ------- Fonctions ----------------------------------------------------------------------------------------------------
+
+async function fetchSongs(){
+    let hasNextPage = true;
+    let pageToken = null;
+    let allSongs = [];
+
+    while (hasNextPage) {
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlist_id}&key=${api_key}${pageToken ? '&pageToken=' + pageToken : ''}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new  Error(`Youtube API error ${response.status}: ${data.error?.message ?? 'Erreur inconnue'}`);
+        }  
+
+        const songs = data.items.map((item) => {
+            return {
+                        publish_date: item.snippet.publishedAt,
+                        title: item.snippet.title,
+                        cover: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
+                        video_id: item.snippet.resourceId.videoId,
+                        uploader: item.snippet.videoOwnerChannelTitle,
+                    }
+        });
+
+        allSongs = [...allSongs, ...songs]; 
+
+        if (data.nextPageToken) {
+            pageToken = data.nextPageToken;
+        }
+        else{
+                hasNextPage = false;
+        }
+    }
+    return allSongs;
+}
+
+async function syncSongs() {
+    const fetchedSongs = await fetchSongs();
+
+    for (const song of fetchedSongs) {
+        await pool.execute(
+            "INSERT INTO songs (video_id, title, uploader, cover, publish_date) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, cover = ?, publish_date = ?",
+            [
+                // VALUES
+                song.video_id, 
+                song.title, 
+                song.uploader, 
+                song.cover, 
+                song.publish_date,
+                
+                // UPDATE
+                song.title, 
+                song.uploader, 
+                song.cover, 
+                song.publish_date,
+            ]
+        );
+    }
+
+    const [videoIdsRows] = await pool.execute("SELECT video_id FROM songs");  
+    const dbVideoIds = videoIdsRows.map(row => row.video_id);
+
+    const freshIds = new Set(fetchedSongs.map(song => song.video_id));
+
+    for (const videoId of dbVideoIds) {
+        if (!freshIds.has(videoId)) {
+            await pool.execute(
+                "UPDATE songs SET is_active = false WHERE video_id = ?",
+                [videoId]
+            );
+        }
+    }
+
+    const currentDateTime = new Date();
+
+    await pool.execute(
+        "INSERT INTO cache_meta (id, last_fetch_time) VALUES (?, ?) ON DUPLICATE KEY UPDATE last_fetch_time = ?",
+        [
+            // VALUES
+            1, 
+            currentDateTime,
+            
+            // UPDATE
+            currentDateTime
+        ]
+    );
+
+    return fetchedSongs;
+}
+
+
+// ------- Routes -------------------------------------------------------------------------
 app.get("/", (req, res) => {
     res.json({
         message: "Serveur Deacaeta opérationnel"
@@ -34,64 +152,20 @@ app.get("/", (req, res) => {
 });
 
 // Route API
-let cachedSongs = null;
-let lastFetchTime = null;
 app.get("/coolsongs", async (req, res) => {
-    if (cachedSongs !== null && Date.now() - lastFetchTime < 1000 * 60 * 60) {
-        res.json(cachedSongs);
+    const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1");
+    
+    if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 *2)) {
+        const songs = await syncSongs();
+        res.json(songs);
     }
-    else{  
-        let hasNextPage = true;
-        let pageToken = null;
-        let allSongs = [];
-
-        try {  
-            while (hasNextPage) {
-                const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlist_id}&key=${api_key}${pageToken ? '&pageToken=' + pageToken : ''}`)
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new  Error(`Youtube API error ${response.status}: ${data.error?.message ?? 'Erreur inconnue'}`);
-                }
-
-                const songs = data.items.map((item) => {
-                    return {
-                        publish_date: item.snippet.publishedAt,
-                        title: item.snippet.title,
-                        cover: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
-                        video_id: item.snippet.resourceId.videoId,
-                        channel_title: item.snippet.videoOwnerChannelTitle,
-                    }
-                })
-                allSongs = [...allSongs, ...songs]; 
-
-                if (data.nextPageToken) {
-                    pageToken = data.nextPageToken;
-                }
-                else{
-                    hasNextPage = false;
-                }
-            }
-
-            lastFetchTime = Date.now();
-            cachedSongs = allSongs;
-            res.json(allSongs);
-        } catch (error) {
-            console.error(error);
-
-            if (cachedSongs !== null){
-                res.json(cachedSongs)
-            }
-            else {
-                res.status(503).json({ error: "Le service est temporairement indisponible. Réessayer plus tard." });
-            }
-            
-        }
+    else {
+        function
     }
-})
+});
 
 
-// Start the server and listen on the specified port, logging a message to confirm
+// Lancement du server
 app.listen(port, () => {
     console.log(`Serveur lancé sur le port ${port}`);
 });
