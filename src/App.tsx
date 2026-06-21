@@ -1,16 +1,11 @@
 import { SongCard } from "./components/SongCard"
+import type { SongCardProps } from "./components/SongCard"
 import { useState, useEffect } from "react"
 
-interface Song {
-  title: string,
-  uploader: string
-  cover: string,
-  video_id?: string,
-}
 
 export default function App() {
 
-  const [songs, setSongs] = useState<Song[]>([])
+  const [songs, setSongs] = useState<SongCardProps[]>([])
 
   useEffect(() => {
     fetch("http://localhost:3000/coolsongs")
@@ -22,7 +17,7 @@ export default function App() {
     <div>
       <h1>Deacaeta</h1>
       {songs.map((song) => (
-        <SongCard title={song.title} uploader={song.uploader} cover={song.cover}/>
+        <SongCard {...song} />
       ))}
     </div>
   );
