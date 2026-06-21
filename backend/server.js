@@ -78,6 +78,7 @@ async function fetchSongs(){
                         cover: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
                         video_id: item.snippet.resourceId.videoId,
                         uploader: item.snippet.videoOwnerChannelTitle,
+                        position: item.snippet.position,
                     }
         });
         allSongs = [...allSongs, ...songs]; 
@@ -99,7 +100,7 @@ async function syncSongs() {
 
     for (const song of fetchedSongs) {
         await pool.execute(
-            "INSERT INTO songs (video_id, title, uploader, cover, publish_date) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, cover = ?, publish_date = ?",
+            "INSERT INTO songs (video_id, title, uploader, cover, publish_date, position) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, cover = ?, publish_date = ?, position = ?",
             [
                 // VALUES
                 song.video_id, 
@@ -107,12 +108,14 @@ async function syncSongs() {
                 song.uploader, 
                 song.cover, 
                 song.publish_date,
+                song.position,
                 
                 // UPDATE
                 song.title, 
                 song.uploader, 
                 song.cover, 
                 song.publish_date,
+                song.position,
             ]
         );
     }
@@ -149,7 +152,7 @@ async function syncSongs() {
 }
 
 async function getActiveCachedSongs() {
-    const [activeCachedSongs] = await pool.execute("SELECT video_id, title, uploader, cover, publish_date, artist FROM songs WHERE is_active = true");
+    const [activeCachedSongs] = await pool.execute("SELECT video_id, title, uploader, cover, publish_date, artist FROM songs WHERE is_active = true ORDER BY position ASC");
     return activeCachedSongs;
 }
 
@@ -170,8 +173,8 @@ app.get("/coolsongs", async (req, res) => {
         const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1");
         
         if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 *2)) {
-            const songs = await syncSongs();
-            res.json(songs);
+            await syncSongs();
+            res.json(await getActiveCachedSongs());
         }
         else {
             const activeCachedSongs = await getActiveCachedSongs();
