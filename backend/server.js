@@ -28,12 +28,16 @@ if (!api_key || !playlist_id) {
 
 
 function isDbInfosValueNull(envVar){
+    if (envVar.name === 'DB_PASS') {
+        return false;
+    }
+    
     return !envVar.value;
 }
 const dbInfos = [
     { name: 'DB_HOST', value: process.env.DB_HOST },
     { name: 'DB_USER', value: process.env.DB_USER },
-    { name: 'DB_PASSWORD', value: process.env.DB_PASSWORD },
+    { name: 'DB_PASS', value: process.env.DB_PASS },
     { name: 'DB_NAME', value: process.env.DB_NAME }
 ].filter(isDbInfosValueNull);
 
@@ -47,7 +51,7 @@ if (dbInfos.length > 0) {
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
+    password: process.env.DB_PASS,
     database: process.env.DB_NAME
 });
 
@@ -143,6 +147,14 @@ async function syncSongs() {
     return fetchedSongs;
 }
 
+async function getActiveCachedSongs() {
+    const [activeCachedSongs] = await pool.execute("SELECT video_id, title, uploader, cover, publish_date, artist FROM songs WHERE is_active = true");
+    return activeCachedSongs;
+}
+
+function send503ErrorMessage(res) {
+    return res.status(503).json({ error: "Le service est temporairement indisponible. Réessayer plus tard." });
+}
 
 // ------- Routes -------------------------------------------------------------------------
 app.get("/", (req, res) => {
@@ -153,15 +165,34 @@ app.get("/", (req, res) => {
 
 // Route API
 app.get("/coolsongs", async (req, res) => {
-    const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1");
-    
-    if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 *2)) {
-        const songs = await syncSongs();
-        res.json(songs);
-    }
-    else {
-        function
-    }
+    try {
+        const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1");
+        
+        if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 *2)) {
+            const songs = await syncSongs();
+            res.json(songs);
+        }
+        else {
+            const activeCachedSongs = await getActiveCachedSongs();
+            res.json(activeCachedSongs);  
+        }
+    } catch (error) {
+        console.error(error);
+
+        try {
+            const activeCachedSongs = await getActiveCachedSongs();
+
+            if (activeCachedSongs.length === 0) {
+                send503ErrorMessage(res);
+            }
+            else {
+                res.json(activeCachedSongs)
+            }
+        } catch (dbError) {
+            console.error(dbError);
+            send503ErrorMessage(res);
+        }
+    }  
 });
 
 
