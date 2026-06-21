@@ -31,7 +31,7 @@ function isDbInfosValueNull(envVar){
     if (envVar.name === 'DB_PASS') {
         return false;
     }
-    
+
     return !envVar.value;
 }
 const dbInfos = [
@@ -64,7 +64,7 @@ async function fetchSongs(){
     let allSongs = [];
 
     while (hasNextPage) {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=${playlist_id}&key=${api_key}${pageToken ? '&pageToken=' + pageToken : ''}`);
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,status&maxResults=50&playlistId=${playlist_id}&key=${api_key}${pageToken ? '&pageToken=' + pageToken : ''}`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -80,17 +80,18 @@ async function fetchSongs(){
                         uploader: item.snippet.videoOwnerChannelTitle,
                     }
         });
-
         allSongs = [...allSongs, ...songs]; 
-
+        
         if (data.nextPageToken) {
             pageToken = data.nextPageToken;
         }
         else{
-                hasNextPage = false;
+            hasNextPage = false;
         }
     }
-    return allSongs;
+
+    const filteredSongs = allSongs.filter(song => song.cover && song.uploader);
+    return filteredSongs;
 }
 
 async function syncSongs() {
