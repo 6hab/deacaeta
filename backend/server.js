@@ -64,16 +64,19 @@ async function fetchSongs(){
     let allSongs = [];
 
     while (hasNextPage) {
-        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,status&maxResults=50&playlistId=${playlist_id}&key=${api_key}${pageToken ? '&pageToken=' + pageToken : ''}`);
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,status,contentDetails&maxResults=50&playlistId=${playlist_id}&key=${api_key}${pageToken ? '&pageToken=' + pageToken : ''}`);
         const data = await response.json();
 
         if (!response.ok) {
             throw new  Error(`Youtube API error ${response.status}: ${data.error?.message ?? 'Erreur inconnue'}`);
         }  
 
+        console.log(JSON.stringify(data.items[0], null, 2));
+
         const songs = data.items.map((item) => {
             return {
-                        publish_date: item.snippet.publishedAt,
+                        added_at: item.snippet.publishedAt,
+                        video_published_at: item.contentDetails?.videoPublishedAt,
                         title: item.snippet.title,
                         cover: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
                         video_id: item.snippet.resourceId.videoId,
@@ -100,21 +103,23 @@ async function syncSongs() {
 
     for (const song of fetchedSongs) {
         await pool.execute(
-            "INSERT INTO songs (video_id, title, uploader, cover, publish_date, position) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, cover = ?, publish_date = ?, position = ?",
+            "INSERT INTO songs (video_id, title, uploader, cover, video_published_at, added_at, position) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, cover = ?, video_published_at = ?, added_at = ?, position = ?",
             [
                 // VALUES
                 song.video_id, 
                 song.title, 
                 song.uploader, 
                 song.cover, 
-                song.publish_date,
+                song.video_published_at,
+                song.added_at,
                 song.position,
                 
                 // UPDATE
                 song.title, 
                 song.uploader, 
                 song.cover, 
-                song.publish_date,
+                song.video_published_at,
+                song.added_at,
                 song.position,
             ]
         );
@@ -152,8 +157,38 @@ async function syncSongs() {
 }
 
 async function getActiveCachedSongs() {
-    const [activeCachedSongs] = await pool.execute("SELECT video_id, title, uploader, cover, publish_date, artist FROM songs WHERE is_active = true ORDER BY position ASC");
-    return activeCachedSongs;
+    const [activeCachedSongs] = await pool.execute(
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.cover, songs.video_published_at, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " + 
+        "Left JOIN song_tags ON songs.video_id = song_tags.video_id " + 
+        "Left JOIN tags ON song_tags.tag_id = tags.id " + 
+        "WHERE songs.is_active = true " + 
+        "ORDER BY songs.position ASC"
+    );                
+    // "SELECT video_id, title, uploader, cover, video_published_at, added_at, artist FROM songs WHERE is_active = true ORDER BY position ASC";
+    
+    const songsMap = new Map();
+
+    for (const row of activeCachedSongs) {
+        if (!songsMap.has(row.video_id)) {
+            songsMap.set(row.video_id, {
+                video_id: row.video_id,
+                title: row.title,
+                uploader: row.uploader,
+                cover: row.cover,
+                video_published_at: row.video_published_at,
+                added_at: row.added_at,
+                artist: row.artist,
+                tags: []
+            });
+        }
+        
+        if (row.tag_name !== null) {
+            songsMap.get(row.video_id).tags.push(row.tag_name);
+        }
+    }
+
+    const songs = Array.from(songsMap.values());
+    return songs;
 }
 
 function send503ErrorMessage(res) {
