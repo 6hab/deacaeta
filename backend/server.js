@@ -69,16 +69,14 @@ async function fetchSongs(){
 
         if (!response.ok) {
             throw new  Error(`Youtube API error ${response.status}: ${data.error?.message ?? 'Erreur inconnue'}`);
-        }  
-
-        console.log(JSON.stringify(data.items[0], null, 2));
+        }
 
         const songs = data.items.map((item) => {
             return {
                         added_at: item.snippet.publishedAt,
                         video_published_at: item.contentDetails?.videoPublishedAt,
                         title: item.snippet.title,
-                        cover: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
+                        thumbnail: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
                         video_id: item.snippet.resourceId.videoId,
                         uploader: item.snippet.videoOwnerChannelTitle,
                         position: item.snippet.position,
@@ -94,7 +92,7 @@ async function fetchSongs(){
         }
     }
 
-    const filteredSongs = allSongs.filter(song => song.cover && song.uploader);
+    const filteredSongs = allSongs.filter(song => song.thumbnail && song.uploader);
     return filteredSongs;
 }
 
@@ -103,24 +101,26 @@ async function syncSongs() {
 
     for (const song of fetchedSongs) {
         await pool.execute(
-            "INSERT INTO songs (video_id, title, uploader, cover, video_published_at, added_at, position) VALUES (?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, cover = ?, video_published_at = ?, added_at = ?, position = ?",
+            "INSERT INTO songs (video_id, title, uploader, thumbnail, video_published_at, added_at, position, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, thumbnail = ?, video_published_at = ?, added_at = ?, position = ?, is_active = ?",
             [
                 // VALUES
                 song.video_id, 
                 song.title, 
                 song.uploader, 
-                song.cover, 
+                song.thumbnail, 
                 song.video_published_at,
                 song.added_at,
                 song.position,
+                true,
                 
                 // UPDATE
                 song.title, 
                 song.uploader, 
-                song.cover, 
+                song.thumbnail, 
                 song.video_published_at,
                 song.added_at,
                 song.position,
+                true
             ]
         );
     }
@@ -158,13 +158,13 @@ async function syncSongs() {
 
 async function getActiveCachedSongs() {
     const [activeCachedSongs] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.cover, songs.video_published_at, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " + 
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " + 
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " + 
         "Left JOIN tags ON song_tags.tag_id = tags.id " + 
         "WHERE songs.is_active = true " + 
         "ORDER BY songs.position ASC"
     );                
-    // "SELECT video_id, title, uploader, cover, video_published_at, added_at, artist FROM songs WHERE is_active = true ORDER BY position ASC";
+    // "SELECT video_id, title, uploader, thumbnail, video_published_at, added_at, artist FROM songs WHERE is_active = true ORDER BY position ASC";
     
     const songsMap = new Map();
 
@@ -174,7 +174,7 @@ async function getActiveCachedSongs() {
                 video_id: row.video_id,
                 title: row.title,
                 uploader: row.uploader,
-                cover: row.cover,
+                thumbnail: row.thumbnail,
                 video_published_at: row.video_published_at,
                 added_at: row.added_at,
                 artist: row.artist,
