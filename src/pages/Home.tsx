@@ -1,24 +1,19 @@
-import { SongCard } from "../components/SongCard"
-import type { SongCardProps } from "../components/SongCard"
-import { useState, useEffect } from "react"
+import { SongCard } from "../components/SongCard";
+import { useSongs } from "../hooks/useSongs";
 
+export function Home() {
+  const { songs, loading, error } = useSongs();
 
-export default function App() {
-
-  const [songs, setSongs] = useState<SongCardProps[]>([])
-
-  useEffect(() => {
-    fetch("http://localhost:3000/coolsongs")
-      .then(res => res.json())
-      .then(datat => setSongs(datat)) 
-  }, [])
-  
   return (
-      <div>
-        <h1>Deacaeta</h1>
-        {songs.map((song) => (
-          <SongCard {...song} />
-        ))}
-      </div>
+    <div>
+      <h1>Deacaeta</h1>
+      {loading ? (
+        <div>Loading...</div>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+        songs.map((song) => <SongCard {...song} />)
+      )}
+    </div>
   );
 }
