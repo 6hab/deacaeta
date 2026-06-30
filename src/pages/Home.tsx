@@ -6,13 +6,15 @@ export function Home() {
 
   return (
     <div>
-      <h1>Deacaeta</h1>
       {loading ? (
         <div>Loading...</div>
       ) : error ? (
         <p>{error}</p>
       ) : (
-        songs.map((song) => <SongCard {...song} />)
+        <>
+          <h1>Deacaeta</h1> <br />
+          {songs.map((song) => <SongCard {...song} />)}
+        </>
       )}
     </div>
   );
