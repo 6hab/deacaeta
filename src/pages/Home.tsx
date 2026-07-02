@@ -6,16 +6,16 @@ export function Home() {
 
   return (
     <div>
+      <h1>Deacaeta</h1> <br />
       {loading ? (
         <div>Loading...</div>
       ) : error ? (
         <p>{error}</p>
       ) : (
-        <>
-          <h1>Deacaeta</h1> <br />
-          {songs.map((song) => <SongCard {...song} />)}
-        </>
-      )}
-    </div>
+      <div className="grid grid-cols-4 gap-3">
+        {songs.map((song) => <SongCard {...song} />)}
+      </div>
+        
+      )}</div>
   );
 }
