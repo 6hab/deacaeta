@@ -234,6 +234,26 @@ app.get("/coolsongs", async (req, res) => {
     }  
 });
 
+app.get("/coolsongs/:videoId", async (req, res) => {
+    try {
+        const { videoId } = req.params
+
+        const [rows] = await pool.execute(
+            "SELECT video_id, title, uploader, thumbnail, artist, video_published_at FROM songs WHERE video_id = ?",
+            [videoId]
+        )
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: "Musique introuvable" })
+        }
+
+        res.json(rows[0])
+    } catch (err) {
+        console.error(err)
+        res.status(500).json({ error: "Erreur serveur" })
+    }
+})
+
 
 // Lancement du server
 app.listen(port, () => {

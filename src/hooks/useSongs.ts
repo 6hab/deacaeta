@@ -13,8 +13,8 @@ export function useSongs() {
         setSongs(data);
         setLoading(false);
       })
-      .catch((catchError) => {
-        console.error(catchError);
+      .catch((err) => {
+        console.error(err);
         setLoading(false);
         setError("Erreur, veuillez réessayer plus tard");
       });
