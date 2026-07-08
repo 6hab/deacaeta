@@ -32,9 +32,18 @@ type FlyingNote = {
   videoId: string;
 };
 
+type SongDetails = {
+    video_id: string
+    title: string
+    uploader: string
+    thumbnail: string
+    video_published_at: string
+    artist: string | null
+}
+
 export function Background() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [collectedSongs, setCollectedSongs] = useState<SongDetails[]>([]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -113,7 +122,7 @@ export function Background() {
     };
     frame();
 
-    const handleClick = (event: MouseEvent) => {
+    const handleClick = async (event: MouseEvent) => {
       const clickX = event.clientX
       const clickY = event.clientY
 
@@ -124,8 +133,22 @@ export function Background() {
         return distance < 20
       })
 
-      if (clicked) {
-        setSelectedVideoId(clicked.videoId)
+      if (!clicked) return
+
+      try {
+        const res = await fetch(`http://localhost:3000/coolsongs/${clicked.videoId}`)
+        const data: SongDetails = await res.json()
+
+        setCollectedSongs(prev => {
+          if (prev.some(s => s.video_id === data.video_id)) {
+            return prev
+          }
+          else {
+            return [...prev, data]
+          }
+        })
+      } catch (err) {
+          console.error(err)
       }
     };
     canvas.addEventListener("click", handleClick);
@@ -140,9 +163,9 @@ export function Background() {
   return (
     <>
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full -z-10" />
-      {selectedVideoId && (
+      {collectedSongs.length > 0 && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-          <p>Note : {selectedVideoId}</p>
+          <p>Note : {collectedSongs.map(s => s.title).join(", ")}</p>
         </div>
       )
 
