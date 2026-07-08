@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Music4 } from "lucide-react";
 
 const musicVideosIds = [
   "k85mRPqvMbE", // Crazy Frog - Axel F (Official Video)
@@ -26,7 +27,7 @@ const musicVideosIds = [
   'KNp6-syx8A8', // 「完璧な姉様DE★SU★WA」ファイアーエムブレム ヒーローズ
   'e60G9pxOE-Y', // Totally Spies Theme Song (Offical Music Video)
   'IEGoyTTzQQs', // burbank - gucci gucci
-  'Dyvg235MP54', // TEGAMI BACHI- opening 1(Hajimari No Hi)
+  'YNRPT_2pw5A', // BEN TO opening full
   '1uqJicx-MIg', // D4DJ meme
   '85hM3RG7Ksk', // NXCRE & The Villains - TWISTED (ROCK)
   'RMNjO-rFGX4', // "just let it happen"
@@ -60,6 +61,7 @@ type SongDetails = {
 export function Background() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [collectedSongs, setCollectedSongs] = useState<SongDetails[]>([]);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -180,12 +182,22 @@ export function Background() {
     <>
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full -z-10" />
       {collectedSongs.length > 0 && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <p>Note : {collectedSongs.map(s => s.title).join(", ")}</p>
-        </div>
-      )
+        <button
+          onClick={() => setIsDrawerOpen(true)}
+          className="bg-neutral-800 fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full border border-neutral-600 flex items-center justify-center cursor-pointer"
+        >
+          <Music4 
+            size={15}
+            className=""
+          />
 
-      }
+          <span
+            className="bg-cyan-500/60 absolute -top-1 -left-1 w-5 h-5 rounded-full text-xs flex items-center justify-center"
+          >
+            {collectedSongs.length}
+          </span>
+        </button>
+      )}
     </>
   );
 }
