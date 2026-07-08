@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
-const specialSongIds = [
-  "CjKO3qiJo0s", // charlie jay.☆ - sorry.
+const musicVideosIds = [
+  "k85mRPqvMbE", // Crazy Frog - Axel F (Official Video)
   "wtq6FnM3c8U", // nico's nextbots ost - sherbet lobby w/ bxnji
   "XY9S9OM119g", // selahh!!! - "Shmoovin"
+  "Uw_hZfH5Ukc", // 9MM x LOLI SHIGURE UI
   "kl-7YbMrAbc", // i9bonsai - picnic
-  "cUFVR5sgbt0", // Three random guys sing together, yt channel : Chris Cooper
+  "jr478w--dpE", // 3 random make an awesome song, yt channel : Jaime Maldonado
   "44UaY-AN6ho", // VØJ, Narvent - Memory Reboot (Music Video)
   "zuzGzcnB30o", // Sokuu - Laisse la partir
   "JP6W6bC9_m0", // capoxxo - perfect ft. oaf1 & dreamcache
@@ -13,7 +14,6 @@ const specialSongIds = [
   "QgFX80N34Fc", // Lazy Confessions
   "KHb-1Kysz08", // TrickYzb - PPAP2026(Music video)
   "ZPYyOtFRS4M", // favbea - play this at 1.25x speed, you'll thank me later
-
   "1e9B31FLT-s", // Ludovico Einaudi - Experience
 
   "ZoNH1HJr0OQ", // 攬佬SKAI ISYOURGOD [Poker music]
@@ -22,6 +22,22 @@ const specialSongIds = [
   "RgqR60K5qBU", // harinezumi *all plats*
   "Ubfuj_XMynw", // master X Cellou Lamikai
   "XkmNtT_CAUc", // 中島 愛 - そんなこと裏のまた裏話でしょ？ (Full Ver.)
+  '3QqnZTqZL_A', // 🎵Waluigi vs Smash Bros BATTLE RAP Part 2 🎵
+  'KNp6-syx8A8', // 「完璧な姉様DE★SU★WA」ファイアーエムブレム ヒーローズ
+  'e60G9pxOE-Y', // Totally Spies Theme Song (Offical Music Video)
+  'IEGoyTTzQQs', // burbank - gucci gucci
+  'Dyvg235MP54', // TEGAMI BACHI- opening 1(Hajimari No Hi)
+  '1uqJicx-MIg', // D4DJ meme
+  '85hM3RG7Ksk', // NXCRE & The Villains - TWISTED (ROCK)
+  'RMNjO-rFGX4', // "just let it happen"
+  'ng8mh6JUIqY', // BABYMETAL - BxMxC (OFFICIAL)
+  '9mH-aj_n6AE', // カッコよすぎるお姉さんと踊りました「Crazy Shuffle / Yooh」 - NISHI【DANCERUSH World Champion】
+  'IDdcA0IPxXg', // Phoenix Wright - Smooth Criminal
+  '-SyBR-M2YvU', // LE TIGRE - DECEPTACON
+  'yoHR8qwuqmY', // mambo-p - Proof geometric can solve love affairs
+  '3qr1-yE5c6s', // Lil Mabu - RICH SCHOLAR (Official Music Video)
+  'xfeys7Jfnx8', // Nice guys
+  'iF2xUtCcu6Q', // bxnji - bouncin
 ];
 
 type FlyingNote = {
@@ -75,7 +91,7 @@ export function Background() {
 
         for (let i = 0; i < waveSize; i++) {
           const videoId =
-            specialSongIds[Math.floor(Math.random() * specialSongIds.length)];
+            musicVideosIds[Math.floor(Math.random() * musicVideosIds.length)];
 
           currentFlyingNotes.push({
             x: -50,
