@@ -63,6 +63,24 @@ export function Background() {
   const [collectedSongs, setCollectedSongs] = useState<SongDetails[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
 
+const drawerRef = useRef<HTMLDivElement>(null)
+
+useEffect(() => {
+  if (!isDrawerOpen) return
+
+    const handleClicksOutside = (e: MouseEvent) => {
+      console.log("clic détecté en dehors")
+      if (drawerRef.current && !drawerRef.current.contains(e.target as Node))  {
+        setIsDrawerOpen(false)
+      }
+    }
+
+    document.addEventListener("click", handleClicksOutside)
+    return () => {
+      document.removeEventListener("click", handleClicksOutside)
+    }
+  }, [isDrawerOpen])
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -183,7 +201,7 @@ export function Background() {
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full -z-10" />
       {collectedSongs.length > 0 && (
         <button
-          onClick={() => setIsDrawerOpen(true)}
+          onClick={(e) => {e.stopPropagation();  setIsDrawerOpen(true)} }
           className="bg-neutral-800 fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full border border-neutral-600 flex items-center justify-center cursor-pointer"
         >
           <Music4 
@@ -198,6 +216,15 @@ export function Background() {
           </span>
         </button>
       )}
+
+      {isDrawerOpen && (
+        <div
+          ref={drawerRef}
+          className="fixed z-50 bg-black/90 w-50 h-70 bottom-25 right-4"
+        >
+          test
+        </div>
+      )}
     </>
-  );
+  )
 }
