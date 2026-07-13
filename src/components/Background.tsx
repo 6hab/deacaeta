@@ -102,6 +102,12 @@ useEffect(() => {
 
     let nextWaveIn = 1;
 
+    // Couleur du background
+    const backgroundGradiant = ctx.createLinearGradient(0, 0, 0, canvas.height)
+    backgroundGradiant.addColorStop(0, "#0f1726")
+    backgroundGradiant.addColorStop(1, "#0a0f19")
+
+
     const trySpawnWave = () => {
       nextWaveIn -= 0.016;
 
@@ -136,6 +142,7 @@ useEffect(() => {
       );
     };
 
+    // Notes filantes
     const drawFlyingNotes = () => {
       currentFlyingNotes.forEach((note) => {
         ctx.fillStyle = "cyan";
@@ -147,6 +154,9 @@ useEffect(() => {
 
     const frame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = backgroundGradiant
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       trySpawnWave();
       updateFlyingNotes();
