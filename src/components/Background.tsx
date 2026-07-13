@@ -69,7 +69,6 @@ useEffect(() => {
   if (!isDrawerOpen) return
 
     const handleClicksOutside = (e: MouseEvent) => {
-      console.log("clic détecté en dehors")
       if (drawerRef.current && !drawerRef.current.contains(e.target as Node))  {
         setIsDrawerOpen(false)
       }
@@ -103,7 +102,7 @@ useEffect(() => {
 
     let nextWaveIn = 1;
 
-    let trySpawnWave = () => {
+    const trySpawnWave = () => {
       nextWaveIn -= 0.016;
 
       if (nextWaveIn <= 0) {
@@ -201,8 +200,8 @@ useEffect(() => {
       <canvas ref={canvasRef} className="fixed inset-0 w-full h-full -z-10" />
       {collectedSongs.length > 0 && (
         <button
-          onClick={(e) => {e.stopPropagation();  setIsDrawerOpen(true)} }
-          className="bg-neutral-800 fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full border border-neutral-600 flex items-center justify-center cursor-pointer"
+          onClick={(e) => {e.stopPropagation(); setIsDrawerOpen(prev => !prev)} }
+          className="bg-neutral-900 fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full border border-neutral-600 flex items-center justify-center hover:bg-neutral-800 cursor-pointer"
         >
           <Music4 
             size={15}
@@ -220,9 +219,30 @@ useEffect(() => {
       {isDrawerOpen && (
         <div
           ref={drawerRef}
-          className="fixed z-50 bg-black/90 w-50 h-70 bottom-25 right-4"
+          className="fixed z-50 bg-black/90 w-60 max-h-70 overflow-y-auto bottom-25 right-4"
         >
-          test
+        <h2 className="flex text-amber-500/90 justify-center gap-1 mb-1 mt-2"> <Music4 size={19}/> Collected songs <Music4 size={19}/></h2>
+          
+          {collectedSongs.map((song) => (
+            <a
+              key={song.video_id}
+              href={`https://www.youtube.com/watch?v=${song.video_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-1 py-2 hover:bg-neutral-800"
+            >
+              <img src={song.thumbnail} alt="thumbnail"
+                className="w-15 h-15 object-cover" />
+
+              <div className="flex flex-col min-w-0">
+                <p className="text-white text-sm truncate">{song.title}</p>
+                <p className="text-neutral-300 text-xs">{song.artist ?? song.uploader}</p>
+                <p className="text-neutral-400 italic">{song.video_published_at.slice(0, 7)}</p>
+              </div>
+            </a>
+
+          ))
+          }
         </div>
       )}
     </>
