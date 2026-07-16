@@ -11,7 +11,7 @@ export interface SongCardProps {
 
 export function SongCard(song: Readonly<SongCardProps>) {
   return (
-    <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl overflow-hidden cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-500 transition-colors">
+    <div className="bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
       <img src={song.thumbnail}
         className="w-full object-cover aspect-video"
       />
@@ -20,15 +20,15 @@ export function SongCard(song: Readonly<SongCardProps>) {
           id : {song.video_id}
         </p>*/}
 
-        <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100 truncate">
+        <p className="text-sm font-medium text-neutral-100 truncate">
           {song.title}
         </p>
 
-        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+        <p className="text-xs text-neutral-400 mt-0.5">
           {song.artist ?? song.uploader}
         </p>
 
-        <p className="text-xs italic text-neutral-500 dark:text-neutral-400 mt-1">
+        <p className="text-xs italic text-neutral-400 mt-1">
           {song.video_published_at.slice(0, 4)}
         </p>
       </div>

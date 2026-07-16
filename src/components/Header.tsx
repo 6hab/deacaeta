@@ -4,18 +4,15 @@ import {
     Search, 
     Shuffle, 
     ListFilter, 
-    MoonStar, 
-    Sun, 
     X
 }from "lucide-react";
 
 export function Header() {
-    const [isDark, setIsDark] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
     return(
         <>
-            <header className="bg-white dark:bg-neutral-700 px-7 py-5">
+            <header className="bg-neutral-700 px-7 py-5">
 
                 {/* Recherche sur petit écran */}
                 {mobileSearchOpen ? (
@@ -25,7 +22,7 @@ export function Header() {
 
                         <X
                             size={25}
-                            className="shrink-0 cursor-pointer text-neutral-500 dark:text-white/60"
+                            className="shrink-0 cursor-pointer text-white/60"
                             onClick={() => setMobileSearchOpen(false)} 
                         />
                     </div>
@@ -38,7 +35,7 @@ export function Header() {
                         <div className="flex items-center gap-3">
                             <Search
                                 size={25}
-                                className="cursor-pointer text-neutral-500 dark:text-white/60"
+                                className="cursor-pointer text-white/60"
                                 onClick={() => setMobileSearchOpen(true)}
                             />
                             <div className="flex items-center border rounded px-2 py-0.5 gap-1 text-sm cursor-pointer">
@@ -47,17 +44,8 @@ export function Header() {
                             <div className="flex items-center border rounded px-2 py-0.5 gap-1 text-sm cursor-pointer">
                                 <ListFilter size={16} /> Filter
                             </div>
-                            <button
-                                onClick={() => {
-                                    setIsDark(!isDark);
-                                    document.documentElement.classList.toggle("dark");
-                                }}
-                                className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                                >
-                                {isDark ? <Sun size={22} className="text-yellow-400" /> : <MoonStar size={22} className="text-blue-400/60" />}
-                            </button>
+
                             <div className="border rounded px-2 py-0.5 cursor-pointer">Connexion</div>
-                            
                         </div>
                     </div>
                 )}
@@ -74,20 +62,11 @@ export function Header() {
                                 <ListFilter size={16} /> Filter
                             </div>
 
-                            <button
-                                onClick={() => {
-                                    setIsDark(!isDark);
-                                    document.documentElement.classList.toggle("dark");
-                                }}
-                                className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                            >
-                                {isDark ? <Sun size={22} className="text-yellow-400" /> : <MoonStar size={22} className="text-blue-400/60" />}
-                            </button>
                             <div className="border rounded px-2 py-0.5 cursor-pointer">Connexion</div>
                         </div>
                 </div>
             </header>
-            <hr className="border-gray-300 dark:border-gray-600" />
+            <hr className="border-gray-600" />
         </>
     )
 }
