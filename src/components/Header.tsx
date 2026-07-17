@@ -12,12 +12,12 @@ export function Header() {
 
     return(
         <>
-            <header className="bg-neutral-700 px-7 py-5">
+            <header className=" px-7 py-5">
 
                 {/* Recherche sur petit écran */}
                 {mobileSearchOpen ? (
                     <div className="flex items-center gap-3 md:hidden">
-                        <div className="shrink-0 font-semibold">Deacaeta</div>
+                        <div className="shrink-0 font-semibold text-white">Deacaeta - Cool Songs</div>
                         <div className="flex-1"><SearchBar autoFocus={true} /></div>
 
                         <X
@@ -31,7 +31,7 @@ export function Header() {
                     <div className="flex items-center justify-between gap-4 md:hidden">
                         
                         {/* Affichage sur petit écran */}
-                        <div className="shrink-0 font-semibold">Deacaeta</div>
+                        <div className="shrink-0 font-semibold text-white">Deacaeta - Cool Songs</div>
                         <div className="flex items-center gap-3">
                             <Search
                                 size={25}
@@ -39,20 +39,24 @@ export function Header() {
                                 onClick={() => setMobileSearchOpen(true)}
                             />
                             <div className="flex items-center border rounded px-2 py-0.5 gap-1 text-sm cursor-pointer">
-                                <Shuffle size={16} /> Shuffle
+                                <Shuffle 
+                                    size={16} 
+                                    className="text-amber-400"
+                                />
+                                Shuffle
                             </div>
                             <div className="flex items-center border rounded px-2 py-0.5 gap-1 text-sm cursor-pointer">
                                 <ListFilter size={16} /> Filter
                             </div>
 
-                            <div className="border rounded px-2 py-0.5 cursor-pointer">Connexion</div>
+                            <div className="text-neutral-500 border border-cyan-600 rounded px-2 py-0.5 cursor-pointer">Connexion</div>
                         </div>
                     </div>
                 )}
                 
                 {/* Affichage grand écran */}
                 <div className="hidden md:flex items-center justify-between gap-3 max-w-screen-xl mx-auto">
-                        <div className="shrink-0 font-semibold">Deacaeta</div>
+                        <div className="shrink-0 font-semibold text-white">Deacaeta</div>
                         <div className="min-w-0 flex-1 max-w-xs"><SearchBar /></div>
                         <div className="flex items-center gap-4 shrink-0">
                             <div className="flex items-center border rounded px-2 py-0.5 gap-1 text-sm cursor-pointer">
@@ -62,7 +66,7 @@ export function Header() {
                                 <ListFilter size={16} /> Filter
                             </div>
 
-                            <div className="border rounded px-2 py-0.5 cursor-pointer">Connexion</div>
+                            <div className="text-neutral-500 border border-cyan-600 rounded px-2 py-0.5 cursor-pointer">Connexion</div>
                         </div>
                 </div>
             </header>
