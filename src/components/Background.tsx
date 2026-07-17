@@ -194,7 +194,7 @@ export function Background() {
         });
         
         // Design des notes de musiques
-        ctx.font = "18px sans-serif"
+        ctx.font = "20px sans-serif"
         ctx.fillStyle = note.color
         ctx.fillText(note.shape, note.x, note.y, canvas.width)
         ctx.globalAlpha = 1

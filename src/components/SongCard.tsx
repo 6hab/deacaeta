@@ -11,7 +11,7 @@ export interface SongCardProps {
 
 export function SongCard(song: Readonly<SongCardProps>) {
   return (
-    <div className="bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
+    <div className="border border-white/12 rounded-xl overflow-hidden cursor-pointer hover:border-white transition-colors bg-white/8 backdrop-blur">
       <img src={song.thumbnail}
         className="w-full object-cover aspect-video"
       />

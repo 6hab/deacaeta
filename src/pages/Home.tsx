@@ -4,10 +4,21 @@ import { useSongs } from "../hooks/useSongs";
 
 
 export function Home() {
-  //const { songs, loading, error } = useSongs();
+  const { songs, loading, error } = useSongs();
 
   return (
     
-    <div></div>
+    <div className="min-h-screen">
+      <Header />
+      {loading ? (
+        <div>Loading...</div>
+      ) : error ? (
+        <p>{error}</p>
+      ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-2 py-4 max-w-7xl mx-auto">
+          {songs.map((song) => <SongCard key={song.video_id} {...song} />)}
+        </div>
+      )}
+    </div>
   );
 }
