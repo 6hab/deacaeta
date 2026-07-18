@@ -10,7 +10,13 @@ export function Home() {
     
     <div>
       <Header/>
-      
+
+      {/* Body */}
+      <div className="py-5">
+        <div>
+          
+        </div>
+      </div>
     </div>
   );
 }
