@@ -73,8 +73,8 @@ async function fetchSongs(){
 
         const songs = data.items.map((item) => {
             return {
-                        added_at: item.snippet.publishedAt,
-                        video_published_at: item.contentDetails?.videoPublishedAt,
+                        added_at: new Date(item.snippet.publishedAt),
+                        video_published_at: new Date(item.contentDetails?.videoPublishedAt),
                         title: item.snippet.title,
                         thumbnail: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
                         video_id: item.snippet.resourceId.videoId,
@@ -97,6 +97,7 @@ async function fetchSongs(){
 }
 
 async function syncSongs() {
+
     const fetchedSongs = await fetchSongs();
 
     for (const song of fetchedSongs) {
