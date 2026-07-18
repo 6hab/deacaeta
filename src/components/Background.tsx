@@ -97,6 +97,9 @@ export function Background() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const header = document.querySelector("header")
+    const headerHeight = header ? header.offsetHeight : 0
+
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -134,7 +137,7 @@ export function Background() {
           const hue = Math.floor(Math.random() * 360)
           const color = `hsl(${hue}, 80%, 65%)`
 
-          const startY = Math.random() * canvas.height
+          const startY = headerHeight + Math.random() * (canvas.height - headerHeight)
 
           currentFlyingNotes.push({
             x: -50,
@@ -158,6 +161,10 @@ export function Background() {
         note.x += note.vx;
         note.y += note.vy;
         note.trailCounter += 1
+
+        if (note.y < headerHeight) {
+          note.vy *= -1
+        }
 
         if (note.trailCounter > 10) {
           note.trail.push({x: note.x, y: note.y})
