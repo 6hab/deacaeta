@@ -16,8 +16,8 @@ export function Header() {
 
                 {/* Recherche sur petit écran */}
                 {mobileSearchOpen ? (
-                    <div className="flex items-center gap-3 md:hidden">
-                        <div className="shrink-0 font-semibold text-white">Deacaeta - Cool Songs</div>
+                    <div className="flex items-center h-14 gap-3 md:hidden">
+                        <div className="shrink-0 font-semibold text-white">Deacaeta</div>
                         <div className="flex-1"><SearchBar autoFocus={true} /></div>
 
                         <X
@@ -28,7 +28,7 @@ export function Header() {
                     </div>
                 ) : (
             
-                    <div className="flex items-center justify-between gap-4 md:hidden">
+                    <div className="flex items-center justify-between h-14 gap-4 md:hidden">
                         
                         {/* Affichage sur petit écran */}
                         <div className="shrink-0 font-semibold text-white">Deacaeta - Cool Songs</div>
