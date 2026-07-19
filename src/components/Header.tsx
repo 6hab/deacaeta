@@ -55,7 +55,7 @@ export function Header() {
                                 Filter
                             </div>
 
-                            <div className="text-neutral-400 border border-cyan-600 hover:border-cyan-400 rounded px-2 py-0.5 cursor-pointer">Log in</div>
+                            <div className="text-neutral-400 border border-cyan-600 hover:border-cyan-400 rounded px-2 py-0.5 cursor-pointer whitespace-nowrap">Log in</div>
                         </div>
                     </div>
                 )}
