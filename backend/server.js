@@ -209,6 +209,50 @@ async function getActiveCachedSongs() {
     return songs;
 }
 
+async function getTopViewedSongs() {
+    const [topIds] = await pool.execute("SELECT video_id, FROM songs WHERE is_active = true ORDER BY view_count DES LIMIT 100");
+
+    if (topIds.length === 0) {
+        return [];
+    }
+
+    const videoIds = topIds.map(row => row.video_id);
+    const placeholders = videoIds.map(() => "?").join(",");
+
+    const [activeCachedTopViewedSongs] = await pool.execute(
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " +
+        "Left JOIN song_tags ON songs.video_id = song_tags.video_id " +
+        "Left JOIN tags ON song_tags.tag_id = tags.id " +
+        "WHERE songs.video_id IN (" + placeholders + ") " +
+        "ORDER BY songs.view_count DESC",
+        videoIds
+    );
+
+    const songsMap = new Map()
+
+    for (const row of activeCachedTopViewedSongs) {
+        if (!songsMap.has(row.video_id)) {
+            songsMap.set(row.video_id, {
+                video_id: row.video_id,
+                title: row.title,
+                uploader: row.uploader,
+                thumbnail: row.thumbnail,
+                video_published_at: row.video_published_at,
+                view_count: row.view_count,
+                added_at: row.added_at,
+                artist: row.artist,
+                tags: []
+            })
+        }
+
+        if (row.tag_name !== null) {
+            songsMap.get(row.video_id).tags.push(row.tag_name);
+        }
+    }
+
+    return Array.from(songsMap.values());
+}
+
 function send503ErrorMessage(res) {
     return res.status(503).json({ error: "Le service est temporairement indisponible. Réessayer plus tard." });
 }
@@ -271,6 +315,24 @@ app.get("/coolsongs/:videoId", async (req, res) => {
         res.status(500).json({ error: "Erreur serveur" })
     }
 })
+
+app.get("/topsongs/views", async (req, res) => {
+    try {
+        const activeCachedTopViewedSongs = await getTopViewedSongs();
+
+        if (activeCachedTopViewedSongs.length === 0) {
+            await syncSongs();
+            res.json(await getTopViewedSongs());
+        }
+        else {
+            res.json(activeCachedTopViewedSongs)
+        }
+    } catch (dbError) {
+        console.log(dbError);
+        send503ErrorMessage(res);
+    }
+    }
+);
 
 
 // Lancement du server
