@@ -9,6 +9,7 @@ const fakeRecentSongs: SongCardProps[] = [
     title: "Une song recente",
     uploader: "Uploader1",
     video_published_at: "2020-01-01",
+    view_count: 10000,
     added_at: "2026-01-01",
     artist: "Artiste1",
     tags: [],
@@ -19,6 +20,7 @@ const fakeRecentSongs: SongCardProps[] = [
     title: "Une song avec un titre vraiment mais alors long",
     uploader: "Uploader2",
     video_published_at: "2021-01-01",
+    view_count: 2000000,
     added_at: "2025-01-01",
     artist: "",
     tags: [],
@@ -29,6 +31,7 @@ const fakeRecentSongs: SongCardProps[] = [
     title: "Une 3eme song",
     uploader: "Uploader3",
     video_published_at: "2022-01-01",
+    view_count: 3000,
     added_at: "2024-01-01",
     artist: "Artiste3",
     tags: [],
@@ -37,7 +40,7 @@ const fakeRecentSongs: SongCardProps[] = [
 
 
 export function RecentlyAdded() {
-    
+
   return (
     <div className="p-3">
       <div className="flex gap-2 text-white font-semibold mb-1 items-center">

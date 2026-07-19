@@ -8,6 +8,7 @@ const fakeSong: SongCardProps = {
   title: "Un titre vraiment vraiment mais alors vraiment long",
   uploader: "Uploader1",
   video_published_at: "2020-01-01",
+  view_count: 100000,
   added_at: "2026-01-01",
   artist: "Artiste1",
   tags: [],
