@@ -4,6 +4,7 @@ export interface SongCardProps {
   title: string;
   uploader: string;
   video_published_at: string;
+  view_count: number;
   added_at: string;
   artist: string;
   tags: string[];

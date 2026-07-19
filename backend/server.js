@@ -71,7 +71,7 @@ async function fetchSongs(){
             throw new  Error(`Youtube API error ${response.status}: ${data.error?.message ?? 'Erreur inconnue'}`);
         }
 
-        const songs = data.items.map((item) => {
+        let songs = data.items.map((item) => {
             return {
                         added_at: new Date(item.snippet.publishedAt),
                         video_published_at: new Date(item.contentDetails?.videoPublishedAt),
@@ -82,6 +82,20 @@ async function fetchSongs(){
                         position: item.snippet.position,
                     }
         });
+
+        // Fetch du nombre de vues
+        const videoIds = songs.map(row => row.video_id);
+        const fetchedViewCount = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&key=${api_key}&id=${videoIds.join(",")}`);
+        
+        const viewCountData = await fetchedViewCount.json();
+        //console.log(JSON.stringify(viewCountData, null, 2))
+
+        const viewCountMap = new Map(viewCountData.items.map(item => [item.id, item.statistics.viewCount]))
+        songs = songs.map(song => (
+            {...song, view_count: Number(viewCountMap.get(song.video_id))}
+        ))
+
+        // Stockage des songs
         allSongs = [...allSongs, ...songs]; 
         
         if (data.nextPageToken) {
@@ -102,7 +116,7 @@ async function syncSongs() {
 
     for (const song of fetchedSongs) {
         await pool.execute(
-            "INSERT INTO songs (video_id, title, uploader, thumbnail, video_published_at, added_at, position, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, thumbnail = ?, video_published_at = ?, added_at = ?, position = ?, is_active = ?",
+            "INSERT INTO songs (video_id, title, uploader, thumbnail, video_published_at, view_count, added_at, position, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE title = ?, uploader = ?, thumbnail = ?, video_published_at = ?, view_count = ?, added_at = ?, position = ?, is_active = ?",
             [
                 // VALUES
                 song.video_id, 
@@ -110,6 +124,7 @@ async function syncSongs() {
                 song.uploader, 
                 song.thumbnail, 
                 song.video_published_at,
+                song.view_count,
                 song.added_at,
                 song.position,
                 true,
@@ -119,6 +134,7 @@ async function syncSongs() {
                 song.uploader, 
                 song.thumbnail, 
                 song.video_published_at,
+                song.view_count,
                 song.added_at,
                 song.position,
                 true
@@ -159,13 +175,13 @@ async function syncSongs() {
 
 async function getActiveCachedSongs() {
     const [activeCachedSongs] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " + 
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " + 
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " + 
         "Left JOIN tags ON song_tags.tag_id = tags.id " + 
         "WHERE songs.is_active = true " + 
         "ORDER BY songs.position ASC"
     );                
-    // "SELECT video_id, title, uploader, thumbnail, video_published_at, added_at, artist FROM songs WHERE is_active = true ORDER BY position ASC";
+    // "SELECT video_id, title, uploader, thumbnail, video_published_at, view_count, added_at, artist FROM songs WHERE is_active = true ORDER BY position ASC";
     
     const songsMap = new Map();
 
@@ -177,6 +193,7 @@ async function getActiveCachedSongs() {
                 uploader: row.uploader,
                 thumbnail: row.thumbnail,
                 video_published_at: row.video_published_at,
+                view_count: row.view_count,
                 added_at: row.added_at,
                 artist: row.artist,
                 tags: []
