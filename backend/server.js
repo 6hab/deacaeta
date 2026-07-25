@@ -253,6 +253,50 @@ async function getTopViewedSongs() {
     return Array.from(songsMap.values());
 }
 
+async function getRecentlyAddedSongs() {
+    const [recentIds] = await pool.execute("SELECT video_id FROM songs WHERE is_active = true AND added_at >= NOW() - INTERVAL 7 DAY ORDER BY added_at DESC")
+
+    if (recentIds.length === 0) {
+        return []
+    } 
+
+    const videoIds = recentIds.map(row => row.video_id)
+    const placeholders = videoIds.map(() => "?").join(",")
+
+    const [acitveRecentlyAddedSongs] = await pool.execute(
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " +
+        "Left JOIN song_tags ON songs.video_id = song_tags.video_id " +
+        "Left JOIN tags ON song_tags.tag_id = tags.id " +
+        "WHERE songs.video_id IN (" + placeholders + ") " +
+        "ORDER BY songs.added_at DESC",
+        videoIds
+    )
+
+    const songsMap = new Map()
+
+    for (const row of acitveRecentlyAddedSongs) {
+        if (!songsMap.has(row.video_id)) {
+            songsMap.set(row.video_id, {
+                video_id: row.video_id,
+                title: row.title,
+                uploader: row.uploader,
+                thumbnail: row.thumbnail,
+                video_published_at: row.video_published_at,
+                view_count: row.view_count,
+                added_at: row.added_at,
+                artist: row.artist,
+                tags: []
+            })
+        }
+
+        if (row.tag_name !== null) {
+            songsMap.get(row.video_id).tags.push(row.tag_name)
+        }
+    }
+
+    return Array.from(songsMap.values());
+}
+
 function send503ErrorMessage(res) {
     return res.status(503).json({ error: "Le service est temporairement indisponible. Réessayer plus tard." });
 }
@@ -330,9 +374,25 @@ app.get("/topsongs/views", async (req, res) => {
     } catch (dbError) {
         console.log(dbError);
         send503ErrorMessage(res);
+    }   
+});
+
+app.get("/recentlyaddedsongs", async (req, res) => {
+    try {
+        const activeCachedRecentlyAddedSongs = await getRecentlyAddedSongs()
+
+        if (activeCachedRecentlyAddedSongs.length === 0) {
+            await syncSongs()
+            res.json(await getRecentlyAddedSongs())
+        }
+        else {
+            res.json(activeCachedRecentlyAddedSongs)
+        }
+    } catch (dbError) {
+        console.log(dbError)
+        send503ErrorMessage(res)
     }
-    }
-);
+})
 
 
 // Lancement du server
