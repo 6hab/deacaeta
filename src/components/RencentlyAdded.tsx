@@ -1,45 +1,29 @@
 import type { SongCardProps } from "./SongCard";
 import { Clock } from "lucide-react";
-
-// Maquette
-const fakeRecentSongs: SongCardProps[] = [
-  {
-    video_id: "dQw4w9WgXcQ",
-    thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-    title: "Une song recente",
-    uploader: "Uploader1",
-    video_published_at: "2020-01-01",
-    view_count: 10000,
-    added_at: "2026-01-01",
-    artist: "Artiste1",
-    tags: [],
-  },
-  {
-    video_id: "9bZkp7q19f0",
-    thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/hqdefault.jpg",
-    title: "Une song avec un titre vraiment mais alors long",
-    uploader: "Uploader2",
-    video_published_at: "2021-01-01",
-    view_count: 2000000,
-    added_at: "2025-01-01",
-    artist: "",
-    tags: [],
-  },
-  {
-    video_id: "kJQP7kiw5Fk",
-    thumbnail: "https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg",
-    title: "Une 3eme song",
-    uploader: "Uploader3",
-    video_published_at: "2022-01-01",
-    view_count: 3000,
-    added_at: "2024-01-01",
-    artist: "Artiste3",
-    tags: [],
-  },
-];
-
+import { useEffect, useState } from "react";
 
 export function RecentlyAdded() {
+  const [songs, setSongs] = useState<SongCardProps[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch("http://localhost:3000/recentlyaddedsongs")
+    .then((res) => res.json())
+    .then((data) => {
+      setSongs(data);
+      setLoading(false)
+    }) 
+    .catch((err) => {
+      console.log(err)
+      setLoading(false)
+      setError("Erreur, veuillez réessayer plus tard")
+    })
+  }, [])
+
+  if (loading) return null
+  if (error) return null
+  if (songs.length === 0) return null
 
   return (
     <div className="p-3">
@@ -47,27 +31,27 @@ export function RecentlyAdded() {
         <Clock size={16} />
         Recently added
       </div>
-      <div className="flex flex-col gap-2">
-        {fakeRecentSongs.map((song) => (
+      <div className="flex overflow-x-auto [&::-webkit-scrollbar]:hidden [scrollbar-none] gap-2">
+        {songs.map((song) => (
           <a
             key={song.video_id}
             href={`https://www.youtube.com/watch?v=${song.video_id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:bg-white/10 rounded p-1"
+            className="shrink-0 w-42 hover:bg-white/10 rounded "
           >
             <img
               src={song.thumbnail}
-              alt={song.title}
-              className="w-15 h-15 object-cover rounded shrink-0"
+              alt="thumbnail"
+              className="w-40 object-cover aspect-video rounded-lg"
             />
 
-            <div className="flex flex-col min-w-0">
-              <p className="text-sm text-white truncate">{song.title}</p>
-              <p className="text-xs text-neutral-400 truncate">
-                {song.artist == "" ? song.uploader : song.artist}
+              <p 
+                className="text-sm text-white line-clamp-2 mt-1"
+                title={song.title}
+              >
+                {song.title}
               </p>
-            </div>
           </a>
         ))}
       </div>
