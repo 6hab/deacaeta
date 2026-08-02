@@ -6,7 +6,6 @@ export interface SongCardProps {
   video_published_at: string;
   view_count: number;
   added_at: string;
-  artist: string;
   tags: string[];
 }
 
@@ -26,7 +25,7 @@ export function SongCard(song: Readonly<SongCardProps>) {
         </p>
 
         <p className="text-xs text-neutral-400 mt-0.5">
-          {song.artist ?? song.uploader}
+          {song.uploader}
         </p>
 
         <p className="text-xs italic text-neutral-400 mt-1">

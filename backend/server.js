@@ -175,13 +175,13 @@ async function syncSongs() {
 
 async function getActiveCachedSongs() {
     const [activeCachedSongs] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " + 
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, tags.name AS tag_name FROM songs " + 
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " + 
         "Left JOIN tags ON song_tags.tag_id = tags.id " + 
         "WHERE songs.is_active = true " + 
         "ORDER BY songs.position ASC"
     );                
-    // "SELECT video_id, title, uploader, thumbnail, video_published_at, view_count, added_at, artist FROM songs WHERE is_active = true ORDER BY position ASC";
+    // "SELECT video_id, title, uploader, thumbnail, video_published_at, view_count, added_at, FROM songs WHERE is_active = true ORDER BY position ASC";
     
     const songsMap = new Map();
 
@@ -195,7 +195,6 @@ async function getActiveCachedSongs() {
                 video_published_at: row.video_published_at,
                 view_count: row.view_count,
                 added_at: row.added_at,
-                artist: row.artist,
                 tags: []
             });
         }
@@ -220,7 +219,7 @@ async function getTopViewedSongs() {
     const placeholders = videoIds.map(() => "?").join(",");
 
     const [activeCachedTopViewedSongs] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " +
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, tags.name AS tag_name FROM songs " +
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " +
         "Left JOIN tags ON song_tags.tag_id = tags.id " +
         "WHERE songs.video_id IN (" + placeholders + ") " +
@@ -240,7 +239,6 @@ async function getTopViewedSongs() {
                 video_published_at: row.video_published_at,
                 view_count: row.view_count,
                 added_at: row.added_at,
-                artist: row.artist,
                 tags: []
             })
         }
@@ -264,7 +262,7 @@ async function getRecentlyAddedSongs() {
     const placeholders = videoIds.map(() => "?").join(",")
 
     const [acitveRecentlyAddedSongs] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, songs.artist, tags.name AS tag_name FROM songs " +
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, tags.name AS tag_name FROM songs " +
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " +
         "Left JOIN tags ON song_tags.tag_id = tags.id " +
         "WHERE songs.video_id IN (" + placeholders + ") " +
@@ -284,7 +282,6 @@ async function getRecentlyAddedSongs() {
                 video_published_at: row.video_published_at,
                 view_count: row.view_count,
                 added_at: row.added_at,
-                artist: row.artist,
                 tags: []
             })
         }
@@ -345,7 +342,7 @@ app.get("/coolsongs/:videoId", async (req, res) => {
         const { videoId } = req.params
 
         const [rows] = await pool.execute(
-            "SELECT video_id, title, uploader, thumbnail, artist, video_published_at FROM songs WHERE video_id = ?",
+            "SELECT video_id, title, uploader, thumbnail, video_published_at FROM songs WHERE video_id = ?",
             [videoId]
         )
 
