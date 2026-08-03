@@ -352,6 +352,41 @@ async function getArtistById(artistId) {
     return artistMap.get(Number(artistId));
 }
 
+async function getArtistSongs(artistId) {
+    const [artistSongs] = await pool.execute(
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, tags.name AS tag_name FROM songs " + 
+        "Left JOIN song_artists ON songs.video_id = song_artists.video_id " + 
+        "Left JOIN song_tags ON songs.video_id = song_tags.video_id " + 
+        "Left JOIN tags ON song_tags.tag_id = tags.id " + 
+        "WHERE song_artists.artist_id = ?",
+        [artistId]
+    );
+
+    const songsMap = new Map();
+
+    for (const row of artistSongs) {
+        if (!songsMap.has(row.video_id)) {
+            songsMap.set(row.video_id, {
+                video_id: row.video_id,
+                title: row.title,
+                uploader: row.uploader,
+                thumbnail: row.thumbnail,
+                video_published_at: row.video_published_at,
+                view_count: row.view_count,
+                tags: []
+            });
+        }
+
+        if (row.tag_name !== null) {
+            songsMap.get(row.video_id).tags.push(row.tag_name);
+        }
+    }
+
+    const songs = Array.from(songsMap.values());
+    return songs;
+}
+
+
 // ------- Routes -------------------------------------------------------------------------
 app.get("/", (req, res) => {
     res.json({
@@ -591,6 +626,19 @@ app.get("/artists/:artistId", async(req, res) => {
     } catch (error) {
         console.error(error)
         res.status(500).json({error: "An error occurred while retrieving the artist."});
+    }
+})
+
+// Lecture des musiques de l'artiste pour le front
+app.get("/artists/:artistId/songs", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+
+        const artistSongs = await getArtistSongs(Number(artistId));
+        res.status(200).json(artistSongs);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while retrieving the artist's songs."});
     }
 })
 
