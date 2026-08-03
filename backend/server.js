@@ -304,9 +304,15 @@ function send503ErrorMessage(res) {
 
 async function getArtistById(artistId) {
     const [artistInfos] = await pool.execute(
-        "SELECT artists.artist_id, artists.name_original, artists.name_alias, artists.bio, artists.birth_date, artists.death_date, artists.photo,  artist_socials.social_id, artist_socials.link_name, artist_socials.link_url FROM artists " +
+        "SELECT artists.artist_id, artists.name_original, artists.bio, artists.birth_date, artists.death_date, artists.photo,  artist_socials.social_id, artist_socials.link_name, artist_socials.link_url FROM artists " +
         "Left JOIN artist_socials ON artists.artist_id = artist_socials.artist_id " +
         "WHERE artists.artist_id = ? ",
+        [artistId]
+    );
+
+    const [artistAliases] = await pool.execute(
+        "SELECT artist_aliases.artist_id, artist_aliases.alias_id, artist_aliases.alias FROM artist_aliases " +
+        "WHERE artist_aliases.artist_id = ?",
         [artistId]
     );
 
@@ -317,11 +323,11 @@ async function getArtistById(artistId) {
             artistMap.set(row.artist_id, {
                 artist_id: row.artist_id,
                 name_original: row.name_original,
-                name_alias: row.name_alias,
                 birth_date: row.birth_date,
                 death_date: row.death_date,
                 bio: row.bio,
                 photo: row.photo,
+                aliases: [],
                 socials: []
             });
         }
@@ -333,6 +339,14 @@ async function getArtistById(artistId) {
                 link_url: row.link_url
             });
         }
+    }
+
+    for (const row of artistAliases) {
+        artistMap.get(row.artist_id).aliases.push({
+            artist_id: row.artist_id,
+            alias_id: row.alias_id,
+            alias: row.alias
+        });
     }
 
     return artistMap.get(Number(artistId));
@@ -439,7 +453,7 @@ app.get("/recentlyaddedsongs", async (req, res) => {
 
 // Création d'artiste
 app.post("/artists", async (req, res) => {
-    const { name_original, name_alias, bio, birth_date, death_date, photo} = req.body;
+    const { name_original, bio, birth_date, death_date, photo} = req.body;
 
     if (!name_original) {
         return res.status(400).json({ error: "The original name is required." });
@@ -447,14 +461,77 @@ app.post("/artists", async (req, res) => {
 
     try {
         const [result] = await pool.execute(
-            "INSERT INTO artists (name_original, name_alias, bio, birth_date, death_date, photo) VALUES (?, ?, ?, ?, ?, ?)",
-            [name_original, name_alias, bio, birth_date, death_date, photo]
+            "INSERT INTO artists (name_original, bio, birth_date, death_date, photo) VALUES (?, ?, ?, ?, ?)",
+            [name_original, bio, birth_date, death_date, photo]
         );
         res.status(201).json({ message: "Artist added successfully.", artistId: result.insertId });
     
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "An error occurred while adding the artist. "})
+    }
+})
+
+// Modification des infos d'un artiste existant
+app.put("/artists/:artistId", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+        const { name_original, birth_date, death_date, bio, photo } = req.body;
+
+        const [result] = await pool.execute(
+            "UPDATE artists SET name_original = ?, birth_date = ?, death_date = ?, bio = ?, photo = ? WHERE artist_id = ?",
+            [name_original, birth_date, death_date, bio, photo, artistId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({error: "Artist not found."})
+        }
+        res.status(200).json({message: "Artist updated successfully."});
+
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while updating the artist."});
+    }
+})
+
+// Ajout d'alias
+app.post("/artists/:artistId/aliases", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+        const { alias } = req.body;
+
+        if (!alias) {
+            return res.status(400).json({error: "The alias must be completed."});
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO artist_aliases (artist_id, alias) VALUES (?, ?)",
+            [artistId, alias]
+        );
+        res.status(201).json({message: "Alias added successfully.", aliasId: result.insertId });
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while adding an alias."});
+    }
+})
+
+// Suppression d'alias
+app.delete("/artists/:artistId/aliases/:aliasId", async(req, res) => {
+    try { 
+        const { artistId, aliasId } = req.params;
+
+        const [result] = await pool.execute(
+            "DELETE FROM artist_aliases WHERE artist_id = ? AND alias_id = ?",
+            [artistId, aliasId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({error: "Alias not found."});
+        }
+        res.status(200).json({message: "Alias deleted successfully."});
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while deleting an alias."});
     }
 })
 
@@ -498,28 +575,6 @@ app.delete("/artists/:artistId/socials/:socialId", async(req, res) => {
     } catch(error) {
         console.error(error)
         res.status(500).json({error: "An error occurred while deleting a social link."})
-    }
-})
-
-// Modification des infos d'un artiste existant
-app.put("/artists/:artistId", async(req, res) => {
-    try {
-        const { artistId } = req.params;
-        const { name_original, name_alias, birth_date, death_date, bio, photo } = req.body;
-
-        const [result] = await pool.execute(
-            "UPDATE artists SET name_original = ?, name_alias = ?, birth_date = ?, death_date = ?, bio = ?, photo = ? WHERE artist_id = ?",
-            [name_original, name_alias, birth_date, death_date, bio, photo, artistId]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({error: "Artist not found."})
-        }
-        res.status(200).json({message: "Artist updated successfully."});
-
-    } catch(error) {
-        console.error(error);
-        res.status(500).json({error: "An error occurred while updating the artist."});
     }
 })
 
