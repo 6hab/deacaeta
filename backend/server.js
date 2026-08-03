@@ -642,6 +642,24 @@ app.get("/artists/:artistId/songs", async(req, res) => {
     }
 })
 
+// Lecture des artistes ayant collaboré ensemble
+app.get("/artists/:artistId/featurings", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+
+        const [result] = await pool.execute(
+            "SELECT DISTINCT artists.artist_id, artists.name_original, artists.photo FROM song_artists AS sa1 JOIN song_artists AS sa2 ON sa1.video_id = sa2.video_id AND sa1.artist_id != sa2.artist_id " + 
+            "Left JOIN artists ON artists.artist_id = sa2.artist_id " +
+            "WHERE sa1.artist_id = ?",
+            [artistId]
+        )
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while retrieving featurings."});
+    }
+})
+
 // Lancement du server
 app.listen(port, () => {
     console.log(`Serveur lancé sur le port ${port}`);
