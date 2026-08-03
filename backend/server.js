@@ -3,6 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 import mysql from "mysql2/promise";
+import { error } from "node:console";
 
 dotenv.config();
 
@@ -12,6 +13,8 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
+
+app.use(express.json());
 
 // Set the port number from environment variables or default to 3000
 const port = process.env.PORT ?? 3000;
@@ -298,6 +301,43 @@ function send503ErrorMessage(res) {
     return res.status(503).json({ error: "Le service est temporairement indisponible. Réessayer plus tard." });
 }
 
+
+async function getArtistById(artistId) {
+    const [artistInfos] = await pool.execute(
+        "SELECT artists.artist_id, artists.name_original, artists.name_alias, artists.bio, artists.birth_date, artists.death_date, artists.photo,  artist_socials.social_id, artist_socials.link_name, artist_socials.link_url FROM artists " +
+        "Left JOIN artist_socials ON artists.artist_id = artist_socials.artist_id " +
+        "WHERE artists.artist_id = ? ",
+        [artistId]
+    );
+
+    const artistMap = new Map();
+
+    for (const row of artistInfos) {
+        if (!artistMap.has(row.artist_id)) {
+            artistMap.set(row.artist_id, {
+                artist_id: row.artist_id,
+                name_original: row.name_original,
+                name_alias: row.name_alias,
+                birth_date: row.birth_date,
+                death_date: row.death_date,
+                bio: row.bio,
+                photo: row.photo,
+                socials: []
+            });
+        }
+
+        if (row.social_id) {
+            artistMap.get(row.artist_id).socials.push({
+                social_id: row.social_id,
+                link_name: row.link_name,
+                link_url: row.link_url
+            });
+        }
+    }
+
+    return artistMap.get(Number(artistId));
+}
+
 // ------- Routes -------------------------------------------------------------------------
 app.get("/", (req, res) => {
     res.json({
@@ -357,6 +397,8 @@ app.get("/coolsongs/:videoId", async (req, res) => {
     }
 })
 
+
+// ----------- Page d'accueil ------------------------------------------------------------------------------------
 app.get("/topsongs/views", async (req, res) => {
     try {
         const activeCachedTopViewedSongs = await getTopViewedSongs();
@@ -391,6 +433,111 @@ app.get("/recentlyaddedsongs", async (req, res) => {
     }
 })
 
+
+
+// ---------- Page artistes ----------------------------------------------------------------------------------------------------
+
+// Création d'artiste
+app.post("/artists", async (req, res) => {
+    const { name_original, name_alias, bio, birth_date, death_date, photo} = req.body;
+
+    if (!name_original) {
+        return res.status(400).json({ error: "The original name is required." });
+    }
+
+    try {
+        const [result] = await pool.execute(
+            "INSERT INTO artists (name_original, name_alias, bio, birth_date, death_date, photo) VALUES (?, ?, ?, ?, ?, ?)",
+            [name_original, name_alias, bio, birth_date, death_date, photo]
+        );
+        res.status(201).json({ message: "Artist added successfully.", artistId: result.insertId });
+    
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "An error occurred while adding the artist. "})
+    }
+})
+
+// Ajout de réseau social
+app.post("/artists/:artistId/socials", async(req, res) => {
+    try {
+        const { artistId } = req.params
+        const { link_name, link_url } = req.body;
+
+        if (!link_name || !link_url) {
+           return res.status(400).json({ error: "The link name and url must be completed."}) 
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO artist_socials (artist_id, link_name, link_url) VALUES (?, ?, ?)",
+            [artistId, link_name, link_url]
+        );
+        res.status(201).json({message: "Social link added successfully.", socialId: result.insertId });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while adding a social."});
+    }
+})
+
+// Suppression de réseau social
+app.delete("/artists/:artistId/socials/:socialId", async(req, res) => {
+    try {
+        const { artistId, socialId } = req.params;
+
+        const [result] = await pool.execute(
+            "DELETE FROM artist_socials WHERE artist_id = ? AND social_id = ?",
+            [artistId, socialId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({error: "Social link not found."});
+        }
+        res.status(200).json({message: "Social link deleted successfully."});
+
+    } catch(error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while deleting a social link."})
+    }
+})
+
+// Modification des infos d'un artiste existant
+app.put("/artists/:artistId", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+        const { name_original, name_alias, birth_date, death_date, bio, photo } = req.body;
+
+        const [result] = await pool.execute(
+            "UPDATE artists SET name_original = ?, name_alias = ?, birth_date = ?, death_date = ?, bio = ?, photo = ? WHERE artist_id = ?",
+            [name_original, name_alias, birth_date, death_date, bio, photo, artistId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({error: "Artist not found."})
+        }
+        res.status(200).json({message: "Artist updated successfully."});
+
+    } catch(error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while updating the artist."});
+    }
+})
+
+// Lecture des infos de l'artiste pour le front
+app.get("/artists/:artistId", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+        const artistInfos = await getArtistById(Number(artistId));
+
+        if (artistInfos === undefined) {
+            return res.status(404).json({error: "Artist not found."})
+        }
+        res.status(200).json(artistInfos);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while retrieving the artist."});
+    }
+})
 
 // Lancement du server
 app.listen(port, () => {

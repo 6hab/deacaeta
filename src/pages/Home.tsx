@@ -42,21 +42,19 @@ export function Home() {
           <div className="max-w-sm">
             <SongOfTheDay/>
           </div>
-
-          <div className="w-full md:w-70 flex flex-row md:flex-col gap-2">
-            <div className="flex-1 min-w-0">
-              <RecentlyAdded/>
-            </div>
-            <div className="flex-1 min-w-0">
-              <TopViewedSongs />
-            </div>
-          </div>
-
-          <div>
-
-          </div>
+          
         </div>
 
+        <div>
+            <div className="">
+              <RecentlyAdded/>
+            </div>
+
+            <div className="">
+              <TopViewedSongs />
+            </div>
+
+          </div>
       </div>
 
 

@@ -10,7 +10,6 @@ const fakeSong: SongCardProps = {
   video_published_at: "2020-01-01",
   view_count: 100000,
   added_at: "2026-01-01",
-  artist: "Artiste1",
   tags: [],
 };
 
@@ -37,7 +36,7 @@ export function SongOfTheDay() {
           </p>
 
           <p className="text-sm text-neutral-400 mt-1">
-            {fakeSong.artist ?? fakeSong.uploader}
+            {fakeSong.uploader}
           </p>
 
           <div className="flex gap-3 mt-2">
