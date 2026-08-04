@@ -528,6 +528,19 @@ app.post("/artists", async (req, res) => {
     }
 })
 
+// Affichage de tous les artistes 
+app.get("/artists", async(req, res) => {
+    try {
+        const [result] = await pool.execute(
+            "SELECT artists.artist_id, artists.name_original, artists.photo FROM artists"
+        )
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while retrieving the artists."});
+    }
+})
+
 // Modification des infos d'un artiste existant
 app.put("/artists/:artistId", async(req, res) => {
     try {
