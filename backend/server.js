@@ -660,6 +660,27 @@ app.get("/artists/:artistId/featurings", async(req, res) => {
     }
 })
 
+// Lecture des artistes similaires 
+app.get("/artists/:artistId/similar-artists", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+
+        const [result] = await pool.execute(
+            "SELECT DISTINCT artists.artist_id, artists.name_original, artists.photo FROM song_artists AS sa1 " +
+            "JOIN song_tags AS st1 ON sa1.video_id = st1.video_id " +
+            "JOIN song_tags AS st2 ON st1.tag_id = st2.tag_id AND st1.video_id != st2.video_id " + 
+            "JOIN song_artists AS sa2 ON st2.video_id = sa2.video_id " +
+            "JOIN artists ON artists.artist_id = sa2.artist_id " + 
+            "WHERE sa1.artist_id = ? AND sa2.artist_id != ?",
+            [artistId, artistId]
+        )
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while retrieving similar artists."})
+    }
+})
+
 // Lancement du server
 app.listen(port, () => {
     console.log(`Serveur lancé sur le port ${port}`);
