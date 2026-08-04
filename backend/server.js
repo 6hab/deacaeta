@@ -467,6 +467,28 @@ app.post("/coolsongs/:videoId/artists", async(req, res) => {
     }
 })
 
+// Rélier une chanson à un ou plusieurs tags
+app.post("/coolsongs/:videoId/tags", async(req, res) => {
+    try {
+        const { videoId } = req.params;
+        const { tag_ids } = req.body;
+
+        if (!tag_ids) {
+            return res.status(400).json({error: "At least one tag must be selected."});
+        }
+
+        for (const tagId of tag_ids) {
+            const [result] = await pool.execute(
+                "INSERT INTO song_tags (video_id, tag_id) VALUES (?, ?)",
+                [videoId, tagId]
+            )
+        }
+        res.status(201).json({message: "Tag(s) linked to the song successfully."});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while tagging a song."});
+    }
+})
 
 // ----------- Page d'accueil ------------------------------------------------------------------------------------
 app.get("/topsongs/views", async (req, res) => {
