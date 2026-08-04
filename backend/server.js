@@ -531,10 +531,24 @@ app.post("/artists", async (req, res) => {
 // Affichage de tous les artistes 
 app.get("/artists", async(req, res) => {
     try {
-        const [result] = await pool.execute(
-            "SELECT artists.artist_id, artists.name_original, artists.photo FROM artists"
-        )
-        res.status(200).json(result);
+        const { search } = req.query;
+
+        if (req.query.search) {
+            const [result] = await pool.execute(
+                "SELECT artists.artist_id, artists.name_original, artists.photo FROM artists " +
+                "LEFT JOIN artist_aliases ON artists.artist_id = artist_aliases.artist_id " +
+                "WHERE artists.name_original LIKE ? OR artist_aliases.alias LIKE ?",
+                [`%${search}%`, `%${search}%`]
+            )
+            res.status(200).json(result);
+        }
+        else {
+            
+            const [result] = await pool.execute(
+                "SELECT artists.artist_id, artists.name_original, artists.photo FROM artists"
+            )
+            res.status(200).json(result);
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({error: "An error occurred while retrieving the artists."});
