@@ -446,6 +446,27 @@ app.get("/coolsongs/:videoId", async (req, res) => {
     }
 })
 
+// Rélation entre une musique et son artiste
+app.post("/coolsongs/:videoId/artists", async(req, res) => {
+    try {
+        const { videoId } = req.params;
+        const { artist_id } = req.body;
+
+        if (!artist_id) {
+            return res.status(400).json({error: "An artist must be selected."})
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO song_artists (video_id, artist_id) VALUES (?, ?)",
+            [videoId, artist_id]
+        )
+        res.status(201).json({message: "Artist linkded to the song successfully."});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while linking the artist to the song."});
+    }
+})
+
 
 // ----------- Page d'accueil ------------------------------------------------------------------------------------
 app.get("/topsongs/views", async (req, res) => {
