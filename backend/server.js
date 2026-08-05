@@ -467,6 +467,31 @@ app.post("/coolsongs/:videoId/artists", async(req, res) => {
     }
 })
 
+// Création de tag
+app.post("/tags", async(req, res) => {
+    try {
+        const { name, type } = req.body;
+
+        if (!name || !type) {
+            return res.status(400).json({error: "The tag name and type are required."});
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO tags (name, type) VALUES (?, ?)",
+            [name, type]
+        )
+        res.status(201).json({message: "Tag created successfully.", tagId: result.insertId});
+    } catch (error) {
+        console.error(error);
+        if (error.code === "ER_DUP_ENTRY") {
+            res.status(409).json({error: "A tag with this name already exists."});
+        }
+        else {
+            res.status(500).json({error: "An error occurred while creating a tag."});
+        }
+    }
+})
+
 // Rélier une chanson à un ou plusieurs tags
 app.post("/coolsongs/:videoId/tags", async(req, res) => {
     try {
