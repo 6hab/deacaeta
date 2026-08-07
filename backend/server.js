@@ -387,13 +387,14 @@ async function getArtistSongs(artistId) {
 }
 
 
-// ------- Routes -------------------------------------------------------------------------
+//-------------------- Routes -------------------------------------------------------------------------------
 app.get("/", (req, res) => {
     res.json({
         message: "Serveur Deacaeta opérationnel"
     });
 });
 
+ // ------ Route Songs ----------------
 // Route API
 app.get("/coolsongs", async (req, res) => {
     try {
@@ -446,131 +447,7 @@ app.get("/coolsongs/:videoId", async (req, res) => {
     }
 })
 
-// Rélation entre une musique et son artiste
-app.post("/coolsongs/:videoId/artists", async(req, res) => {
-    try {
-        const { videoId } = req.params;
-        const { artist_id } = req.body;
-
-        if (!artist_id) {
-            return res.status(400).json({error: "An artist must be selected."})
-        }
-
-        const [result] = await pool.execute(
-            "INSERT INTO song_artists (video_id, artist_id) VALUES (?, ?)",
-            [videoId, artist_id]
-        )
-        res.status(201).json({message: "Artist linkded to the song successfully."});
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({error: "An error occurred while linking the artist to the song."});
-    }
-})
-
-// Création de tag
-app.post("/tags", async(req, res) => {
-    try {
-        const { name, type } = req.body;
-
-        if (!name || !type) {
-            return res.status(400).json({error: "The tag name and type are required."});
-        }
-
-        const [result] = await pool.execute(
-            "INSERT INTO tags (name, type) VALUES (?, ?)",
-            [name, type]
-        )
-        res.status(201).json({message: "Tag created successfully.", tagId: result.insertId});
-    } catch (error) {
-        console.error(error);
-        if (error.code === "ER_DUP_ENTRY") {
-            res.status(409).json({error: "A tag with this name already exists."});
-        }
-        else {
-            res.status(500).json({error: "An error occurred while creating a tag."});
-        }
-    }
-})
-
-// Recherche de tag parmis tous les tags sinon list des tags
-app.get("/tags", async(req, res) => {
-    try {
-        if (req.query.search) {
-
-            const { search } = req.query;
-            
-            const [result] = await pool.execute(
-                "SELECT id, name FROM tags " +
-                "WHERE name LIKE ?",
-                [`%${search}%`]
-            )
-            res.status(200).json(result);
-        }
-        else {
-            const [result] = await pool.execute(
-                "SELECT id, name FROM tags"
-            );
-            res.status(200).json(result);
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({error: "An error occurred while retrieving a tag."});
-    }
-})
-
-// Rélier une chanson à un ou plusieurs tags
-app.post("/coolsongs/:videoId/tags", async(req, res) => {
-    try {
-        const { videoId } = req.params;
-        const { tag_ids } = req.body;
-
-        if (!tag_ids) {
-            return res.status(400).json({error: "At least one tag must be selected."});
-        }
-
-        for (const tagId of tag_ids) {
-            const [result] = await pool.execute(
-                "INSERT INTO song_tags (video_id, tag_id) VALUES (?, ?)",
-                [videoId, tagId]
-            )
-        }
-        res.status(201).json({message: "Tag(s) linked to the song successfully."});
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({error: "An error occurred while tagging a song."});
-    }
-})
-
-// Affichage des tags par type en plus de la recherche de tag dans le type
-app.get("/tags", async(req, res) => {
-    try {
-        const { search } = req.query;
-        const { type } = req.query;
-
-        let query = "SELECT id, name FROM tags WHERE 1=1";
-        let values = [];
-
-        if (type) {
-            query += " AND type = ?";
-            values.push(type);
-        }
-
-        if (search) {
-            query += " AND name LIKE ?";
-            values.push(`%${search}%`);
-        }
-
-        const [result] = await pool.execute(query, values);
-        res.status(200).json(result);
-        
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({error: "An error occurred while retrieving tags by type."});
-    }
-})
-
-
-// ----------- Page d'accueil ------------------------------------------------------------------------------------
+    // ----------- Page d'accueil ------------------------------------------------------------------------------------
 app.get("/topsongs/views", async (req, res) => {
     try {
         const activeCachedTopViewedSongs = await getTopViewedSongs();
@@ -605,10 +482,52 @@ app.get("/recentlyaddedsongs", async (req, res) => {
     }
 })
 
+// Rélation entre une musique et son artiste
+app.post("/coolsongs/:videoId/artists", async(req, res) => {
+    try {
+        const { videoId } = req.params;
+        const { artist_id } = req.body;
+
+        if (!artist_id) {
+            return res.status(400).json({error: "An artist must be selected."})
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO song_artists (video_id, artist_id) VALUES (?, ?)",
+            [videoId, artist_id]
+        )
+        res.status(201).json({message: "Artist linkded to the song successfully."});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while linking the artist to the song."});
+    }
+})
+
+// Rélier une chanson à un ou plusieurs tags
+app.post("/coolsongs/:videoId/tags", async(req, res) => {
+    try {
+        const { videoId } = req.params;
+        const { tag_ids } = req.body;
+
+        if (!tag_ids) {
+            return res.status(400).json({error: "At least one tag must be selected."});
+        }
+
+        for (const tagId of tag_ids) {
+            const [result] = await pool.execute(
+                "INSERT INTO song_tags (video_id, tag_id) VALUES (?, ?)",
+                [videoId, tagId]
+            )
+        }
+        res.status(201).json({message: "Tag(s) linked to the song successfully."});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while tagging a song."});
+    }
+})
 
 
-// ---------- Page artistes ----------------------------------------------------------------------------------------------------
-
+ // -------- Route Artistes ----------------------- 
 // Création d'artiste
 app.post("/artists", async (req, res) => {
     const { name_original, bio, birth_date, death_date, photo} = req.body;
@@ -657,6 +576,35 @@ app.get("/artists", async(req, res) => {
     }
 })
 
+// Lecture des infos de l'artiste pour le front
+app.get("/artists/:artistId", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+        const artistInfos = await getArtistById(Number(artistId));
+
+        if (artistInfos === undefined) {
+            return res.status(404).json({error: "Artist not found."})
+        }
+        res.status(200).json(artistInfos);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while retrieving the artist."});
+    }
+})
+
+// Lecture des musiques de l'artiste pour le front
+app.get("/artists/:artistId/songs", async(req, res) => {
+    try {
+        const { artistId } = req.params;
+
+        const artistSongs = await getArtistSongs(Number(artistId));
+        res.status(200).json(artistSongs);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while retrieving the artist's songs."});
+    }
+})
+
 // Modification des infos d'un artiste existant
 app.put("/artists/:artistId", async(req, res) => {
     try {
@@ -676,6 +624,49 @@ app.put("/artists/:artistId", async(req, res) => {
     } catch(error) {
         console.error(error);
         res.status(500).json({error: "An error occurred while updating the artist."});
+    }
+})
+
+// Ajout de réseau social
+app.post("/artists/:artistId/socials", async(req, res) => {
+    try {
+        const { artistId } = req.params
+        const { link_name, link_url } = req.body;
+
+        if (!link_name || !link_url) {
+            return res.status(400).json({ error: "The link name and url must be completed."}) 
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO artist_socials (artist_id, link_name, link_url) VALUES (?, ?, ?)",
+            [artistId, link_name, link_url]
+        );
+        res.status(201).json({message: "Social link added successfully.", socialId: result.insertId });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while adding a social."});
+    }
+})
+
+// Suppression de réseau social
+app.delete("/artists/:artistId/socials/:socialId", async(req, res) => {
+    try {
+        const { artistId, socialId } = req.params;
+
+        const [result] = await pool.execute(
+            "DELETE FROM artist_socials WHERE artist_id = ? AND social_id = ?",
+            [artistId, socialId]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({error: "Social link not found."});
+        }
+        res.status(200).json({message: "Social link deleted successfully."});
+
+    } catch(error) {
+        console.error(error)
+        res.status(500).json({error: "An error occurred while deleting a social link."})
     }
 })
 
@@ -720,78 +711,6 @@ app.delete("/artists/:artistId/aliases/:aliasId", async(req, res) => {
     }
 })
 
-// Ajout de réseau social
-app.post("/artists/:artistId/socials", async(req, res) => {
-    try {
-        const { artistId } = req.params
-        const { link_name, link_url } = req.body;
-
-        if (!link_name || !link_url) {
-           return res.status(400).json({ error: "The link name and url must be completed."}) 
-        }
-
-        const [result] = await pool.execute(
-            "INSERT INTO artist_socials (artist_id, link_name, link_url) VALUES (?, ?, ?)",
-            [artistId, link_name, link_url]
-        );
-        res.status(201).json({message: "Social link added successfully.", socialId: result.insertId });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({error: "An error occurred while adding a social."});
-    }
-})
-
-// Suppression de réseau social
-app.delete("/artists/:artistId/socials/:socialId", async(req, res) => {
-    try {
-        const { artistId, socialId } = req.params;
-
-        const [result] = await pool.execute(
-            "DELETE FROM artist_socials WHERE artist_id = ? AND social_id = ?",
-            [artistId, socialId]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({error: "Social link not found."});
-        }
-        res.status(200).json({message: "Social link deleted successfully."});
-
-    } catch(error) {
-        console.error(error)
-        res.status(500).json({error: "An error occurred while deleting a social link."})
-    }
-})
-
-// Lecture des infos de l'artiste pour le front
-app.get("/artists/:artistId", async(req, res) => {
-    try {
-        const { artistId } = req.params;
-        const artistInfos = await getArtistById(Number(artistId));
-
-        if (artistInfos === undefined) {
-            return res.status(404).json({error: "Artist not found."})
-        }
-        res.status(200).json(artistInfos);
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({error: "An error occurred while retrieving the artist."});
-    }
-})
-
-// Lecture des musiques de l'artiste pour le front
-app.get("/artists/:artistId/songs", async(req, res) => {
-    try {
-        const { artistId } = req.params;
-
-        const artistSongs = await getArtistSongs(Number(artistId));
-        res.status(200).json(artistSongs);
-    } catch (error) {
-        console.error(error)
-        res.status(500).json({error: "An error occurred while retrieving the artist's songs."});
-    }
-})
-
 // Lecture des artistes ayant collaboré ensemble
 app.get("/artists/:artistId/featurings", async(req, res) => {
     try {
@@ -830,6 +749,62 @@ app.get("/artists/:artistId/similar-artists", async(req, res) => {
         res.status(500).json({error: "An error occurred while retrieving similar artists."})
     }
 })
+
+
+ // ------- Route Tags ----------------------------
+ // Création de tag
+app.post("/tags", async(req, res) => {
+    try {
+        const { name, type } = req.body;
+
+        if (!name || !type) {
+            return res.status(400).json({error: "The tag name and type are required."});
+        }
+
+        const [result] = await pool.execute(
+            "INSERT INTO tags (name, type) VALUES (?, ?)",
+            [name, type]
+        )
+        res.status(201).json({message: "Tag created successfully.", tagId: result.insertId});
+    } catch (error) {
+        console.error(error);
+        if (error.code === "ER_DUP_ENTRY") {
+            res.status(409).json({error: "A tag with this name already exists."});
+        }
+        else {
+            res.status(500).json({error: "An error occurred while creating a tag."});
+        }
+    }
+})
+
+// Affichage des tags par type en plus de la recherche de tag dans le type
+app.get("/tags", async(req, res) => {
+    try {
+        const { search } = req.query;
+        const { type } = req.query;
+
+        let query = "SELECT id, name FROM tags WHERE 1=1";
+        let values = [];
+
+        if (type) {
+            query += " AND type = ?";
+            values.push(type);
+        }
+
+        if (search) {
+            query += " AND name LIKE ?";
+            values.push(`%${search}%`);
+        }
+
+        const [result] = await pool.execute(query, values);
+        res.status(200).json(result);
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while retrieving tags by type."});
+    }
+})
+
 
 // Lancement du server
 app.listen(port, () => {
