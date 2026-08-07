@@ -541,6 +541,35 @@ app.post("/coolsongs/:videoId/tags", async(req, res) => {
     }
 })
 
+// Affichage des tags par type en plus de la recherche de tag dans le type
+app.get("/tags", async(req, res) => {
+    try {
+        const { search } = req.query;
+        const { type } = req.query;
+
+        let query = "SELECT id, name FROM tags WHERE 1=1";
+        let values = [];
+
+        if (type) {
+            query += " AND type = ?";
+            values.push(type);
+        }
+
+        if (search) {
+            query += " AND name LIKE ?";
+            values.push(`%${search}%`);
+        }
+
+        const [result] = await pool.execute(query, values);
+        res.status(200).json(result);
+        
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while retrieving tags by type."});
+    }
+})
+
+
 // ----------- Page d'accueil ------------------------------------------------------------------------------------
 app.get("/topsongs/views", async (req, res) => {
     try {
