@@ -492,6 +492,24 @@ app.post("/tags", async(req, res) => {
     }
 })
 
+// Recherche de tag parmis tous les tags
+app.get("/tags", async(req, res) => {
+    try {
+        const { search } = req.query;
+        
+        const [result] = await pool.execute(
+            "SELECT id, name FROM tags " +
+            "WHERE name LIKE ?",
+            [`%${search}%`]
+        )
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while searching a tag."});
+    }
+})
+
 // Rélier une chanson à un ou plusieurs tags
 app.post("/coolsongs/:videoId/tags", async(req, res) => {
     try {
