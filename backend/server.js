@@ -492,21 +492,29 @@ app.post("/tags", async(req, res) => {
     }
 })
 
-// Recherche de tag parmis tous les tags
+// Recherche de tag parmis tous les tags sinon list des tags
 app.get("/tags", async(req, res) => {
     try {
-        const { search } = req.query;
-        
-        const [result] = await pool.execute(
-            "SELECT id, name FROM tags " +
-            "WHERE name LIKE ?",
-            [`%${search}%`]
-        )
-        res.status(200).json(result);
+        if (req.query.search) {
 
+            const { search } = req.query;
+            
+            const [result] = await pool.execute(
+                "SELECT id, name FROM tags " +
+                "WHERE name LIKE ?",
+                [`%${search}%`]
+            )
+            res.status(200).json(result);
+        }
+        else {
+            const [result] = await pool.execute(
+                "SELECT id, name FROM tags"
+            );
+            res.status(200).json(result);
+        }
     } catch (error) {
         console.error(error);
-        res.status(500).json({error: "An error occurred while searching a tag."});
+        res.status(500).json({error: "An error occurred while retrieving a tag."});
     }
 })
 
