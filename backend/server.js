@@ -176,16 +176,20 @@ async function syncSongs() {
     return fetchedSongs;
 }
 
-async function getActiveCachedSongs() {
-    const [activeCachedSongs] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, tags.name AS tag_name FROM songs " + 
+async function getActiveCachedSongs(search) {
+    let query = "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, tags.name AS tag_name FROM songs " + 
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " + 
         "Left JOIN tags ON song_tags.tag_id = tags.id " + 
-        "WHERE songs.is_active = true " + 
-        "ORDER BY songs.position ASC"
-    );                
-    // "SELECT video_id, title, uploader, thumbnail, video_published_at, view_count, added_at, FROM songs WHERE is_active = true ORDER BY position ASC";
+        "WHERE songs.is_active = true";
+    let values = [];
     
+    if (search) {
+        query += " AND songs.title LIKE ?";
+        values.push(`%${search}%`);
+    }
+
+    const [activeCachedSongs] = await pool.execute(query, values);
+
     const songsMap = new Map();
 
     for (const row of activeCachedSongs) {
