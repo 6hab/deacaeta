@@ -217,7 +217,7 @@ async function getActiveCachedSongs(search) {
 
 async function getSongById(videoId) {
     const [songInfos] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, artists.name_original, tags.name AS tag_name FROM songs " + 
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, artists.artist_id, artists.name_original, tags.name AS tag_name FROM songs " + 
         "LEFT JOIN song_artists ON songs.video_id = song_artists.video_id " +
         "LEFT JOIN artists ON song_artists.artist_id = artists.artist_id " +
         "LEFT JOIN song_tags ON songs.video_id = song_tags.video_id " + 
@@ -243,7 +243,10 @@ async function getSongById(videoId) {
         }
 
         if (row.name_original != null) {
-            songMap.get(row.video_id).artists.push(row.name_original);
+            songMap.get(row.video_id).artists.push({
+                artist_id: row.artist_id,
+                name_original: row.name_original
+            });
         }
 
         if (row.tag_name != null) {
