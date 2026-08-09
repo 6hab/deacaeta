@@ -215,6 +215,46 @@ async function getActiveCachedSongs(search) {
     return songs;
 }
 
+async function getSongById(videoId) {
+    const [songInfos] = await pool.execute(
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, artists.name_original, tags.name AS tag_name FROM songs " + 
+        "LEFT JOIN song_artists ON songs.video_id = song_artists.video_id " +
+        "LEFT JOIN artists ON song_artists.artist_id = artists.artist_id " +
+        "LEFT JOIN song_tags ON songs.video_id = song_tags.video_id " + 
+        "LEFT JOIN tags ON song_tags.tag_id = tags.id " + 
+        "WHERE video_id = ?",
+        [videoId]
+    );
+
+    const songMap = new Map();
+
+    for (const row of songInfos) {
+        if (!songMap.has(row.video_id)) {
+            songMap.set(row.video_id, {
+                video_id: row.video_id,
+                title: row.title,
+                uploader: row.uploader,
+                thumbnail: row.thumbnail,
+                video_published_at: row.video_published_at,
+                view_count: row.view_count,
+                artists: [],
+                tags: []
+            });
+        }
+
+        if (row.name_original != null) {
+            songMap.get(row.video_id).artists.push(row.name_original);
+        }
+
+        if (row.tag_name != null) {
+            songMap.get(row.video_id).tags.push(row.tag_name);
+        }
+    }
+    
+    const song = songMap.get(Number(videoId));
+    return song;
+}
+
 async function getTopViewedSongs() {
     const [topIds] = await pool.execute("SELECT video_id, FROM songs WHERE is_active = true ORDER BY view_count DES LIMIT 100");
 
@@ -435,21 +475,17 @@ app.get("/coolsongs", async (req, res) => {
 
 app.get("/coolsongs/:videoId", async (req, res) => {
     try {
-        const { videoId } = req.params
+        const { videoId } = req.params;
 
-        const [rows] = await pool.execute(
-            "SELECT video_id, title, uploader, thumbnail, video_published_at FROM songs WHERE video_id = ?",
-            [videoId]
-        )
+        const song = await getSongById(videoId); 
 
-        if (rows.length === 0) {
-            return res.status(404).json({ error: "Musique introuvable" })
+        if (!song) {
+            return res.status(404).json({ error: "Song not found."});
         }
-
-        res.json(rows[0])
-    } catch (err) {
-        console.error(err)
-        res.status(500).json({ error: "Erreur serveur" })
+        res.status(200).json(song);
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ error: "An error occurred while retrieving a song."});
     }
 })
 
