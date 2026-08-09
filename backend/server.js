@@ -402,21 +402,23 @@ app.get("/", (req, res) => {
 // Route API
 app.get("/coolsongs", async (req, res) => {
     try {
+        const { search } = req.query;
+
         const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1");
         
         if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 *2)) {
             await syncSongs();
-            res.json(await getActiveCachedSongs());
+            res.json(await getActiveCachedSongs(search));
         }
         else {
-            const activeCachedSongs = await getActiveCachedSongs();
+            const activeCachedSongs = await getActiveCachedSongs(search);
             res.json(activeCachedSongs);  
         }
     } catch (error) {
         console.error(error);
 
         try {
-            const activeCachedSongs = await getActiveCachedSongs();
+            const activeCachedSongs = await getActiveCachedSongs(search);
 
             if (activeCachedSongs.length === 0) {
                 send503ErrorMessage(res);
