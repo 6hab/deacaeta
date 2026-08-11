@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { SongCardProps } from "./SongCard";
+import type { SongCardProps } from "./cards/SongCard";
 import { ChevronRight, Eye } from "lucide-react";
 
 const fakeTopSongs: SongCardProps[] = [

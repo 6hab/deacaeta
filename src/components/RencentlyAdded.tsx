@@ -1,4 +1,4 @@
-import type { SongCardProps } from "./SongCard";
+import type { SongCardProps } from "./cards/SongCard";
 import { Clock } from "lucide-react";
 import { useEffect, useState } from "react";
 

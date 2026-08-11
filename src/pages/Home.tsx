@@ -3,7 +3,7 @@ import { SongOfTheDay } from "../components/SongOfTheDay";
 import { RecentlyAdded } from "../components/RencentlyAdded";
 import { TopViewedSongs } from "../components/TopViewedSongs";
 
-import { SongCard } from "../components/SongCard";
+import { SongCard } from "../components/cards/SongCard";
 import { useSongs } from "../hooks/useSongs";
 
 export function Home() {

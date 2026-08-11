@@ -1,5 +1,5 @@
 import { Header } from "../components/Header";
-import { SongCard } from "../components/SongCard";
+import { SongCard } from "../components/cards/SongCard";
 import { useSongs } from "../hooks/useSongs";
 
 

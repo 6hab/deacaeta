@@ -1,5 +1,5 @@
 import { Sparkle, Heart, Play, ExternalLink } from "lucide-react";
-import type { SongCardProps } from "./SongCard";
+import type { SongCardProps } from "./cards/SongCard";
 
 // Maquette
 const fakeSong: SongCardProps = {
