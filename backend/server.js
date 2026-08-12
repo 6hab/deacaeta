@@ -807,7 +807,7 @@ app.get("/artists/:artistId/similar-artists", async(req, res) => {
             "JOIN song_tags AS st2 ON st1.tag_id = st2.tag_id AND st1.video_id != st2.video_id " + 
             "JOIN song_artists AS sa2 ON st2.video_id = sa2.video_id " +
             "JOIN artists ON artists.artist_id = sa2.artist_id " + 
-            "WHERE sa1.artist_id = ? AND sa2.artist_id != ?",
+            "WHERE sa1.artist_id = ? AND sa2.artist_id != ? ORDER BY RAND() LIMIT 8",
             [artistId, artistId]
         )
         res.status(200).json(result);
