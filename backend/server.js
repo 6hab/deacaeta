@@ -492,6 +492,28 @@ app.get("/coolsongs/:videoId", async (req, res) => {
     }
 })
 
+
+// Lecture des musiques similaires 
+app.get("/coolsongs/:videoId/similar-songs", async (req, res) => {
+    try {
+        const { videoId } = req.params;
+
+        const [result] = await pool.execute(
+            "SELECT DISTINCT s2.video_id, s2.title, s2.thumbnail FROM songs " +
+            "JOIN song_tags AS st1 ON songs.video_id = st1.video_id " +
+            "JOIN song_tags AS st2 ON st1.tag_id = st2.tag_id AND st1.video_id != st2.video_id " +
+            "JOIN songs AS s2 ON st2.video_id = s2.video_id " +
+            "WHERE songs.video_id = ? AND s2.is_active = true ORDER BY RAND() LIMIT 8",
+            [videoId]
+        );
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "An error occurred while retrieving similar songs." });
+    }
+});
+
     // ----------- Page d'accueil ------------------------------------------------------------------------------------
 app.get("/topsongs/views", async (req, res) => {
     try {
