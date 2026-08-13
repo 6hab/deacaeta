@@ -258,6 +258,38 @@ async function getSongById(videoId) {
     return song;
 }
 
+async function getSongOfTheDay() {
+    const [result] = await pool.execute("SELECT song_of_the_day_id, song_of_the_day_date FROM cache_meta WHERE id = 1")
+
+    const currentDate = new Date();
+
+    let song;
+
+    if (result[0].song_of_the_day_date.toISOString().slice(0, 10) === currentDate.toISOString().slice(0, 10)) {
+        song = await getSongById(result[0].song_of_the_day_id);
+    }
+    else {
+        const [rows] = await pool.execute(
+            "SELECT video_id FROM songs " + 
+            "WHERE is_active = 1 " + 
+            "AND video_id NOT IN ( " + 
+                "SELECT song_tags.video_id FROM song_tags " + 
+                "JOIN tags ON song_tags.tag_id = tags.id " + 
+                "WHERE tags.name = 'Playlist' " +
+            ") ORDER BY RAND() LIMIT 1"
+        )
+
+        await pool.execute(
+            "UPDATE cache_meta SET song_of_the_day_id = ?, song_of_the_day_date = ? WHERE id = 1",
+            [rows[0].video_id, currentDate]
+        );
+
+        song = await getSongById(rows[0].video_id);
+    }
+
+    return song;
+}
+
 async function getTopViewedSongs() {
     const [topIds] = await pool.execute("SELECT video_id, FROM songs WHERE is_active = true ORDER BY view_count DES LIMIT 100");
 
@@ -515,7 +547,21 @@ app.get("/coolsongs/:videoId/similar-songs", async (req, res) => {
 });
 
     // ----------- Page d'accueil ------------------------------------------------------------------------------------
-app.get("/topsongs/views", async (req, res) => {
+app.get("/songoftheday", async(req, res) => {
+    try {
+        const song = await getSongOfTheDay();
+
+        if (!song) {
+            return res.status(404).json({error: "No song of the day available."});
+        }
+        res.status(200).json(song);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "An error occurred while retrieving the song of the day."});
+    }
+})
+
+    app.get("/topsongs/views", async (req, res) => {
     try {
         const activeCachedTopViewedSongs = await getTopViewedSongs();
 
