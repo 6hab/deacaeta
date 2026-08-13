@@ -177,9 +177,11 @@ async function syncSongs() {
 }
 
 async function getActiveCachedSongs(search) {
-    let query = "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, tags.name AS tag_name FROM songs " + 
-        "Left JOIN song_tags ON songs.video_id = song_tags.video_id " + 
-        "Left JOIN tags ON song_tags.tag_id = tags.id " + 
+    let query = "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, artists.artist_id, artists.name_original, artists.photo, tags.name AS tag_name FROM songs " + 
+        "LEFT JOIN song_artists ON songs.video_id = song_artists.video_id " +
+        "LEFT JOIN artists ON song_artists.artist_id = artists.artist_id " +
+        "LEFT JOIN song_tags ON songs.video_id = song_tags.video_id " + 
+        "LEFT JOIN tags ON song_tags.tag_id = tags.id " + 
         "WHERE songs.is_active = true";
     let values = [];
     
@@ -202,10 +204,18 @@ async function getActiveCachedSongs(search) {
                 video_published_at: row.video_published_at,
                 view_count: row.view_count,
                 added_at: row.added_at,
+                artists: [],
                 tags: []
             });
         }
         
+        if (row.artist_id !== null) {
+            const entry = songsMap.get(row.video_id);
+            if (!entry.artists.some(a => a.artist_id === row.artist_id)) {
+                entry.artists.push({ artist_id: row.artist_id, name_original: row.name_original, photo: row.photo });
+            }
+        }
+
         if (row.tag_name !== null) {
             songsMap.get(row.video_id).tags.push(row.tag_name);
         }
