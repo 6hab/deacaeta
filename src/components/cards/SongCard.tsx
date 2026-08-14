@@ -1,11 +1,17 @@
+export interface Artist {
+  artist_id: number;
+  name_original: string;
+  photo: string | null;
+}
+
 export interface SongCardProps {
   video_id: string;
-  thumbnail: string;
   title: string;
   uploader: string;
+  thumbnail: string;
   video_published_at: string;
   view_count: number;
-  added_at: string;
+  artists: Artist[];
   tags: string[];
 }
 
@@ -16,16 +22,17 @@ export function SongCard(song: Readonly<SongCardProps>) {
         className="w-full object-cover aspect-video"
       />
       <div className="px-3 py-2">
-        {/*<p className="text-xs text-neutral-300 dark:text-neutral-400">
-          id : {song.video_id}
-        </p>*/}
 
         <p className="text-sm font-medium text-neutral-100 truncate">
           {song.title}
         </p>
 
         <p className="text-xs text-neutral-400 mt-0.5">
-          {song.uploader}
+          {song.artists.map((artist) => (
+            <div key={artist.artist_id}>
+              {artist.name_original}
+            </div>
+          ))}
         </p>
 
         <p className="text-xs italic text-neutral-400 mt-1">
