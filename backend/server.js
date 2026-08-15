@@ -264,8 +264,12 @@ async function getSongById(videoId) {
         }
     }
     
-    const song = songMap.get(Number(videoId));
+    const song = songMap.get(videoId);
     return song;
+}
+
+function toLocalDayString(date) {
+    return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
 }
 
 async function getSongOfTheDay() {
@@ -275,7 +279,7 @@ async function getSongOfTheDay() {
 
     let song;
 
-    if (result[0].song_of_the_day_date.toISOString().slice(0, 10) === currentDate.toISOString().slice(0, 10)) {
+    if (toLocalDayString(result[0].song_of_the_day_date) === toLocalDayString(currentDate)) {
         song = await getSongById(result[0].song_of_the_day_id);
     }
     else {
@@ -288,6 +292,8 @@ async function getSongOfTheDay() {
                 "WHERE tags.name = 'Playlist' " +
             ") ORDER BY RAND() LIMIT 1"
         )
+        //console.log(result[0].song_of_the_day_date, typeof result[0].song_of_the_day_date)
+        //console.log(currentDate.toISOString().slice(0, 10), result[0].song_of_the_day_date.toISOString().slice(0, 10))
 
         await pool.execute(
             "UPDATE cache_meta SET song_of_the_day_id = ?, song_of_the_day_date = ? WHERE id = 1",
@@ -566,7 +572,7 @@ app.get("/songoftheday", async(req, res) => {
         }
         res.status(200).json(song);
     } catch (error) {
-        console.error(error);
+        console.error("ERROR SONGOFTHEDAY:", error);
         res.status(500).json({error: "An error occurred while retrieving the song of the day."});
     }
 })
