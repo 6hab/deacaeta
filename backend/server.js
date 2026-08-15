@@ -232,7 +232,7 @@ async function getSongById(videoId) {
         "LEFT JOIN artists ON song_artists.artist_id = artists.artist_id " +
         "LEFT JOIN song_tags ON songs.video_id = song_tags.video_id " + 
         "LEFT JOIN tags ON song_tags.tag_id = tags.id " + 
-        "WHERE video_id = ?",
+        "WHERE songs.video_id = ?",
         [videoId]
     );
 
