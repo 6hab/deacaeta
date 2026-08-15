@@ -176,6 +176,18 @@ async function syncSongs() {
     return fetchedSongs;
 }
 
+async function ensureFreshData() {
+    const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1;");
+    
+    if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 * 2)) {
+        try {
+            await syncSongs();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}
+
 async function getActiveCachedSongs(search) {
     let query = "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, artists.artist_id, artists.name_original, artists.photo, tags.name AS tag_name FROM songs " + 
         "LEFT JOIN song_artists ON songs.video_id = song_artists.video_id " +
@@ -393,7 +405,7 @@ async function getRecentlyAddedSongs() {
 }
 
 function send503ErrorMessage(res) {
-    return res.status(503).json({ error: "Le service est temporairement indisponible. Réessayer plus tard." });
+    return res.status(503).json({ error: "The service is temporarily unavailable. Please try again later." });
 }
 
 
@@ -495,33 +507,19 @@ app.get("/coolsongs", async (req, res) => {
     try {
         const { search } = req.query;
 
-        const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1");
-        
-        if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 *2)) {
-            await syncSongs();
-            res.json(await getActiveCachedSongs(search));
+        await ensureFreshData();
+
+        const activeCachedSongs = await getActiveCachedSongs(search);
+
+        if (activeCachedSongs.length === 0) {
+            return send503ErrorMessage(res);
         }
-        else {
-            const activeCachedSongs = await getActiveCachedSongs(search);
-            res.json(activeCachedSongs);  
-        }
+
+        res.status(200).json(activeCachedSongs);
     } catch (error) {
         console.error(error);
-
-        try {
-            const activeCachedSongs = await getActiveCachedSongs(search);
-
-            if (activeCachedSongs.length === 0) {
-                send503ErrorMessage(res);
-            }
-            else {
-                res.json(activeCachedSongs)
-            }
-        } catch (dbError) {
-            console.error(dbError);
-            send503ErrorMessage(res);
-        }
-    }  
+        send503ErrorMessage(res);
+    }
 });
 
 app.get("/coolsongs/:videoId", async (req, res) => {
@@ -565,10 +563,12 @@ app.get("/coolsongs/:videoId/similar-songs", async (req, res) => {
     // ----------- Page d'accueil ------------------------------------------------------------------------------------
 app.get("/songoftheday", async(req, res) => {
     try {
+        await ensureFreshData();
+
         const song = await getSongOfTheDay();
 
         if (!song) {
-            return res.status(404).json({error: "No song of the day available."});
+            return res.status(404).json({error: "Song of the day not found."});
         }
         res.status(200).json(song);
     } catch (error) {
@@ -596,18 +596,17 @@ app.get("/songoftheday", async(req, res) => {
 
 app.get("/recentlyaddedsongs", async (req, res) => {
     try {
+        await ensureFreshData();
         const activeCachedRecentlyAddedSongs = await getRecentlyAddedSongs()
 
         if (activeCachedRecentlyAddedSongs.length === 0) {
-            await syncSongs()
-            res.json(await getRecentlyAddedSongs())
+            
+            return res.json([]);
         }
-        else {
-            res.json(activeCachedRecentlyAddedSongs)
-        }
-    } catch (dbError) {
-        console.log(dbError)
-        send503ErrorMessage(res)
+        res.json(activeCachedRecentlyAddedSongs)
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "An error occurred while retrieving recently added songs." });
     }
 })
 
