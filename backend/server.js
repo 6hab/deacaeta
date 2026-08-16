@@ -79,7 +79,7 @@ async function fetchSongs(){
                         added_at: new Date(item.snippet.publishedAt),
                         video_published_at: new Date(item.contentDetails?.videoPublishedAt),
                         title: item.snippet.title,
-                        thumbnail: item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
+                        thumbnail: item.snippet.thumbnails?.maxres?.url ?? item.snippet.thumbnails?.high?.url ?? item.snippet.thumbnails?.medium?.url ?? item.snippet.thumbnails?.default?.url,
                         video_id: item.snippet.resourceId.videoId,
                         uploader: item.snippet.videoOwnerChannelTitle,
                         position: item.snippet.position,

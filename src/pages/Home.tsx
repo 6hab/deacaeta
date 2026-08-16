@@ -39,7 +39,7 @@ export function Home() {
       <div className="px-5 py-5">
 
         <div className="flex flex-col items-center md:flex-row md:items-start md:justify-center gap-6 text-white max-w-7xl mx-auto">
-          <div className="max-w-sm">
+          <div className="">
             <SongOfTheDay/>
           </div>
           
