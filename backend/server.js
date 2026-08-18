@@ -264,11 +264,11 @@ async function getSongById(videoId) {
             });
         }
 
-        if (row.name_original != null) {
-            songMap.get(row.video_id).artists.push({
-                artist_id: row.artist_id,
-                name_original: row.name_original
-            });
+        if (row.artist_id != null) {
+            const entry = songMap.get(row.video_id);
+            if (!entry.artists.some(a => a.artist_id === row.artist_id)) {
+                entry.artists.push({ artist_id: row.artist_id, name_original: row.name_original, photo: row.photo });
+            }
         }
 
         if (row.tag_name != null) {
