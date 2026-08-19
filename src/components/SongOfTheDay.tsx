@@ -31,28 +31,30 @@ export function SongOfTheDay() {
 
           <p className="text-2xl font-bold text-white line-clamp mb-3">{song.title}</p>
 
-          {song.artists.map((artist, index) => (
-            <span key={artist.artist_id} className="inline-flex items-center gap-2">
-              {index !== 0 && <span className="text-white/50 text-sm">feat.</span>}
-              
-              <Link 
-                to={`/artist/${artist.artist_id}`}
-                className="inline-flex items-center gap-2 hover:opacity-80"
-              >
-                {index === 0 && artist.photo ? 
-                <img
-                  src={artist.photo} 
-                  alt={artist.name_original} 
-                  className="w-7 h-7 rounded-full object-cover"
-                /> :
-                <User className="text-white/90 w-7 h-7 bg-white/60 rounded-full" />}
+          <div className="flex flex-wrap items-center gap-x-3 mb-3">
+            {song.artists.map((artist, index) => (
+              <span key={artist.artist_id} className="inline-flex items-center gap-2">
+                {index !== 0 && <span className="text-white/50 text-sm">feat.</span>}
                 
-                <p className="text-sm text-white/70 ">{artist.name_original}</p>
-              </Link>
-            </span>
-          ))}
+                <Link 
+                  to={`/artist/${artist.artist_id}`}
+                  className="inline-flex items-center gap-2 hover:opacity-80"
+                >
+                  {index === 0 && artist.photo ? 
+                  <img
+                    src={artist.photo} 
+                    alt={artist.name_original} 
+                    className="w-7 h-7 rounded-full object-cover"
+                  /> :
+                  <User className="text-white/90 w-7 h-7 bg-white/60 rounded-full" />}
+                  
+                  <p className="text-sm text-white/70 ">{artist.name_original}</p>
+                </Link>
+              </span>
+            ))}
+          </div>
 
-          <div className="flex gap-2 mb-3 mt-3">
+          <div className="flex gap-2 mb-3">
             {song.tags.map((tag) => (
               <span key={tag} className="text-white/90 text-xs bg-white/20 rounded-full px-2 py-1">
                 {tag}
