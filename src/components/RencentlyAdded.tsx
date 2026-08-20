@@ -38,13 +38,16 @@ export function RecentlyAdded() {
             href={`https://www.youtube.com/watch?v=${song.video_id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="shrink-0 w-42 hover:bg-white/10 rounded "
+            className="shrink-0 w-42 rounded "
           >
-            <img
-              src={song.thumbnail}
-              alt="thumbnail"
-              className="w-40 object-cover aspect-video rounded-lg"
-            />
+            <div className="w-40 aspect-video rounded-lg group overflow-hidden">
+              <img
+                src={song.thumbnail}
+                alt="thumbnail"
+                className="object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+            </div>
+            
 
               <p 
                 className="text-sm text-white line-clamp-2 mt-1"
