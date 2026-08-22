@@ -1,25 +1,8 @@
-import type { SongCardProps } from "./cards/SongCard";
 import { Clock } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useRecentlyAdded } from "../hooks/home/useRecentlyAdded";
 
 export function RecentlyAdded() {
-  const [songs, setSongs] = useState<SongCardProps[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetch("http://localhost:3000/recentlyaddedsongs")
-    .then((res) => res.json())
-    .then((data) => {
-      setSongs(data);
-      setLoading(false)
-    }) 
-    .catch((err) => {
-      console.log(err)
-      setLoading(false)
-      setError("Erreur, veuillez réessayer plus tard")
-    })
-  }, [])
+  const { songs, loading, error } = useRecentlyAdded();
 
   if (loading) return null
   if (error) return null
