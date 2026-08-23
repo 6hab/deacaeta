@@ -3,48 +3,19 @@ import { Music4 } from "lucide-react";
 
 const musicVideosIds = [
   "k85mRPqvMbE", // Crazy Frog - Axel F (Official Video)
-  "wtq6FnM3c8U", // nico's nextbots ost - sherbet lobby w/ bxnji
-  "XY9S9OM119g", // selahh!!! - "Shmoovin"
-  "Uw_hZfH5Ukc", // 9MM x LOLI SHIGURE UI
-  "kl-7YbMrAbc", // i9bonsai - picnic
-  "jr478w--dpE", // 3 random make an awesome song, yt channel : Jaime Maldonado
-  "44UaY-AN6ho", // VØJ, Narvent - Memory Reboot (Music Video)
-  "zuzGzcnB30o", // Sokuu - Laisse la partir
-  "JP6W6bC9_m0", // capoxxo - perfect ft. oaf1 & dreamcache
-  "VbJmWCuMiEM", // Concrete Blonde - Bloodletting (The Vampire Song)
+  "-SyBR-M2YvU", // LE TIGRE - DECEPTACON
   "QgFX80N34Fc", // Lazy Confessions
+  "xfeys7Jfnx8", // Nice guys
+
+
+  "Uw_hZfH5Ukc", // 9MM x LOLI SHIGURE UI
+  "jr478w--dpE", // 3 random make an awesome song, yt channel : Jaime Maldonado
   "KHb-1Kysz08", // TrickYzb - PPAP2026(Music video)
   "ZPYyOtFRS4M", // favbea - play this at 1.25x speed, you'll thank me later
-  "1e9B31FLT-s", // Ludovico Einaudi - Experience
-
-  "ZoNH1HJr0OQ", // 攬佬SKAI ISYOURGOD [Poker music]
-  "yupEwQ6qCd0", // 攬佬SKAI ISYOURGOD/AR [Horse racing]
-
-  "RgqR60K5qBU", // harinezumi *all plats*
-  "Ubfuj_XMynw", // master X Cellou Lamikai
-  "XkmNtT_CAUc", // 中島 愛 - そんなこと裏のまた裏話でしょ？ (Full Ver.)
-  "3QqnZTqZL_A", // 🎵Waluigi vs Smash Bros BATTLE RAP Part 2 🎵
-  "KNp6-syx8A8", // 「完璧な姉様DE★SU★WA」ファイアーエムブレム ヒーローズ
   "e60G9pxOE-Y", // Totally Spies Theme Song (Offical Music Video)
-  "IEGoyTTzQQs", // burbank - gucci gucci
-  "YNRPT_2pw5A", // BEN TO opening full
   "1uqJicx-MIg", // D4DJ meme
-  "85hM3RG7Ksk", // NXCRE & The Villains - TWISTED (ROCK)
-  "RMNjO-rFGX4", // "just let it happen"
-
-  "ng8mh6JUIqY", // BABYMETAL - BxMxC (OFFICIAL)
   "WIKqgE4BwAY", // BABYMETAL - ギミチョコ！！- Gimme chocolate!!
-
-  "9mH-aj_n6AE", // カッコよすぎるお姉さんと踊りました「Crazy Shuffle / Yooh」 - NISHI【DANCERUSH World Champion】
-  "IDdcA0IPxXg", // Phoenix Wright - Smooth Criminal
-  "-SyBR-M2YvU", // LE TIGRE - DECEPTACON
-  "yoHR8qwuqmY", // mambo-p - Proof geometric can solve love affairs
-  "3qr1-yE5c6s", // Lil Mabu - RICH SCHOLAR (Official Music Video)
-  "xfeys7Jfnx8", // Nice guys
   "iF2xUtCcu6Q", // bxnji - bouncin
-
-  "BkHZhFhxQUI", // Beelzebub Opening 1 
-  "rsyrbvWlBMc", // Beelzebub ending 4
 ];
 
 type FlyingNote = {
