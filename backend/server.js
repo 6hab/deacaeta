@@ -341,7 +341,7 @@ async function getTopViewedSongs() {
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " +
         "Left JOIN tags ON song_tags.tag_id = tags.id " +
         "WHERE songs.video_id IN (" + placeholders + ") " + 
-        "AND video_id NOT IN ( " + 
+        "AND songs.video_id NOT IN ( " + 
             "SELECT song_tags.video_id FROM song_tags " + 
             "JOIN tags ON song_tags.tag_id = tags.id " + 
             "WHERE tags.name = 'Top exclusion' " +
