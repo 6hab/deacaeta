@@ -319,7 +319,7 @@ async function getSongOfTheDay() {
 }
 
 async function getTopViewedSongs() {
-    const [topIds] = await pool.execute("SELECT video_id, FROM songs WHERE is_active = true ORDER BY view_count DES LIMIT 100");
+    const [topIds] = await pool.execute("SELECT video_id FROM songs WHERE is_active = true ORDER BY view_count DESC LIMIT 100");
 
     if (topIds.length === 0) {
         return [];
