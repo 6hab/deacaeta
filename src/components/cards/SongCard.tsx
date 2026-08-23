@@ -23,7 +23,7 @@ export function SongCard(song: Readonly<SongCardProps>) {
       />
       <div className="px-3 py-2">
 
-        <p className="text-sm font-medium text-neutral-100 truncate">
+        <p className="text-sm font-medium text-neutral-100 line-clamp">
           {song.title}
         </p>
 
