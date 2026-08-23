@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { ArtistsCardProps } from "../components/cards/ArtistsCard";
+import type { ArtistsCardProps } from "../../components/cards/ArtistsCard";
 
 export function useArtists() {
     const [artists, setArtists] = useState<ArtistsCardProps[]>([]);

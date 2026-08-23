@@ -1,6 +1,6 @@
 import { Header } from "../components/Header";
 import { ArtistsCard } from "../components/cards/ArtistsCard";
-import { useArtists } from "../hooks/useArtists";
+import { useArtists } from "../hooks/artists/useArtists";
 
 export function ArtistsPage() {
     const { artists, loading, error } = useArtists();
