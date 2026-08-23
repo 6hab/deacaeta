@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import type { SongCardProps } from "../components/cards/SongCard";
+import type { SongCardProps } from "../../components/cards/SongCard";
 
 export function useSongs() {
   const [songs, setSongs] = useState<SongCardProps[]>([]);
