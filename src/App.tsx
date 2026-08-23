@@ -1,10 +1,14 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-
-import { Home } from "./pages/Home";
-import { DiscoverPage } from "./pages/DiscoverPage"
-import { Background } from "./components/Background";
 import { PlayerProvider } from "./context/PlayerContext";
-import { ArtistsPage } from "./pages/artistsPage";
+
+import { Background } from "./components/Background";
+import { Home } from "./pages/Home";
+
+import { DiscoverPage } from "./pages/DiscoverPage"
+import { SongPage } from "./pages/SongPage";
+
+import { ArtistsPage } from "./pages/ArtistsPage";
+import { ArtistPage } from "./pages/ArtistPage";
 
 export default function App() {
   return (
@@ -13,8 +17,12 @@ export default function App() {
       <Background />
       <Routes>
         <Route path="/" element={<Home />} />
+
         <Route path="/discover" element={<DiscoverPage />} />
+        <Route path="/song/:videoId" element={<SongPage />} />
+
         <Route path="/artists" element={<ArtistsPage />} />
+        <Route path="/artist/:artistId" element={<ArtistPage />} />
       </Routes>
       </PlayerProvider>
     </BrowserRouter>
