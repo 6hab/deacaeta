@@ -1,51 +1,14 @@
 import { Link } from "react-router-dom";
-import type { SongCardProps } from "./cards/SongCard";
 import { ChevronRight, Eye } from "lucide-react";
-
-const fakeTopSongs: SongCardProps[] = [
-  {
-    video_id: "dQw4w9WgXcQ",
-    thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-    title: "Une song populaire",
-    uploader: "Uploader1",
-    video_published_at: "2020-01-01",
-    added_at: "2026-01-01",
-    view_count: 178895974,
-    tags: [],
-  },
-  {
-    video_id: "9bZkp7q19f0",
-    thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/hqdefault.jpg",
-    title: "2eme song",
-    uploader: "Uploader2",
-    video_published_at: "2021-01-01",
-    added_at: "2025-01-01",
-    view_count: 4567890,
-    tags: [],
-  },
-  {
-    video_id: "kJQP7kiw5Fk",
-    thumbnail: "https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg",
-    title: "3eme peu connu",
-    uploader: "Uploader3",
-    video_published_at: "2022-01-01",
-    added_at: "2024-01-01",
-    view_count: 123456,
-    tags: [],
-  },
-    {
-    video_id: "kJQP7kiw5Fk",
-    thumbnail: "https://i.ytimg.com/vi/kJQP7kiw5Fk/hqdefault.jpg",
-    title: "3eme peu connu",
-    uploader: "Uploader3",
-    video_published_at: "2022-01-01",
-    added_at: "2024-01-01",
-    view_count: 123456,
-    tags: [],
-  },
-];
+import { useTopViewedSongs } from "../hooks/home/useTopViewedSongs";
 
 export function TopViewedSongs() {
+  const { songs, loading, error } = useTopViewedSongs();
+
+  if (songs.length === 0) return null;
+  if (loading) return null;
+  if(error) return null;
+
   return (
     <div className="p-3">
       <div className="flex gap-2 text-white font-semibold mb-1 items-center">
@@ -53,7 +16,7 @@ export function TopViewedSongs() {
         Top most viewed
       </div>
       <div className="flex flex-col gap-2">
-        {fakeTopSongs.map((song) => (
+        {songs.map((song) => (
           <a
             key={song.video_id}
             href={`https://www.youtube.com/watch?v=${song.video_id}`}
