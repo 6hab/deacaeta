@@ -301,7 +301,7 @@ async function getSongOfTheDay() {
             "AND video_id NOT IN ( " + 
                 "SELECT song_tags.video_id FROM song_tags " + 
                 "JOIN tags ON song_tags.tag_id = tags.id " + 
-                "WHERE tags.name = 'Playlist' " +
+                "WHERE tags.name = 'Playlist' OR tags.name = 'SOTD exclusion' " +
             ") ORDER BY RAND() LIMIT 1"
         )
         //console.log(result[0].song_of_the_day_date, typeof result[0].song_of_the_day_date)
@@ -319,7 +319,15 @@ async function getSongOfTheDay() {
 }
 
 async function getTopViewedSongs() {
-    const [topIds] = await pool.execute("SELECT video_id FROM songs WHERE is_active = true ORDER BY view_count DESC LIMIT 100");
+    const [topIds] = await pool.execute(
+        "SELECT video_id FROM songs " +
+        "WHERE is_active = true " +
+        "AND video_id NOT IN ( " + 
+            "SELECT song_tags.video_id FROM song_tags " + 
+            "JOIN tags ON song_tags.tag_id = tags.id " + 
+            "WHERE tags.name = 'Top exclusion' " +
+        ") ORDER BY view_count DESC LIMIT 100"
+    )
 
     if (topIds.length === 0) {
         return [];
@@ -332,8 +340,12 @@ async function getTopViewedSongs() {
         "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, songs.added_at, tags.name AS tag_name FROM songs " +
         "Left JOIN song_tags ON songs.video_id = song_tags.video_id " +
         "Left JOIN tags ON song_tags.tag_id = tags.id " +
-        "WHERE songs.video_id IN (" + placeholders + ") " +
-        "ORDER BY songs.view_count DESC",
+        "WHERE songs.video_id IN (" + placeholders + ") " + 
+        "AND video_id NOT IN ( " + 
+            "SELECT song_tags.video_id FROM song_tags " + 
+            "JOIN tags ON song_tags.tag_id = tags.id " + 
+            "WHERE tags.name = 'Top exclusion' " +
+        ") ORDER BY songs.view_count DESC",
         videoIds
     );
 
