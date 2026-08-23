@@ -1,6 +1,6 @@
 import { Header } from "../components/Header";
 import { SongCard } from "../components/cards/SongCard";
-import { useSongs } from "../hooks/useSongs";
+import { useSongs } from "../hooks/songs/useSongs";
 
 
 export function DiscoverPage() {
