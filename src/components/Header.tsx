@@ -57,7 +57,7 @@ export function Header() {
                 )}
                 
                 {/* Affichage grand écran */}
-                <div className="hidden md:flex items-center justify-between gap-3 max-w-screen-xl mx-auto">
+                <div className="hidden md:flex items-center justify-between h-14 gap-4 max-w-screen-xl mx-auto">
                         <div className="shrink-0 font-semibold text-white"><Link to="/">Deacaeta</Link></div>
                         <div className="min-w-0 flex-1 max-w-xs"><SearchBar /></div>
                         <div className="flex items-center gap-4 shrink-0">
