@@ -239,7 +239,7 @@ async function getActiveCachedSongs(search) {
 
 async function getSongById(videoId) {
     const [songInfos] = await pool.execute(
-        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, artists.artist_id, artists.name_original, tags.name AS tag_name FROM songs " + 
+        "SELECT songs.video_id, songs.title, songs.uploader, songs.thumbnail, songs.video_published_at, songs.view_count, artists.artist_id, artists.stage_name, tags.name AS tag_name FROM songs " + 
         "LEFT JOIN song_artists ON songs.video_id = song_artists.video_id " +
         "LEFT JOIN artists ON song_artists.artist_id = artists.artist_id " +
         "LEFT JOIN song_tags ON songs.video_id = song_tags.video_id " + 
@@ -423,7 +423,7 @@ function send503ErrorMessage(res) {
 
 async function getArtistById(artistId) {
     const [artistInfos] = await pool.execute(
-        "SELECT artists.artist_id, artists.name_original, artists.bio, artists.birth_date, artists.death_date, artists.photo,  artist_socials.social_id, artist_socials.link_name, artist_socials.link_url FROM artists " +
+        "SELECT artists.artist_id, artists.stage_name, birth_name, artists.bio, artists.birth_date, artists.death_date, artists.photo,  artist_socials.social_id, artist_socials.link_name, artist_socials.link_url FROM artists " +
         "Left JOIN artist_socials ON artists.artist_id = artist_socials.artist_id " +
         "WHERE artists.artist_id = ? ",
         [artistId]
@@ -441,7 +441,8 @@ async function getArtistById(artistId) {
         if (!artistMap.has(row.artist_id)) {
             artistMap.set(row.artist_id, {
                 artist_id: row.artist_id,
-                name_original: row.name_original,
+                stage_name: row.stage_name,
+                birth_name: row.birth_name,
                 birth_date: row.birth_date,
                 death_date: row.death_date,
                 bio: row.bio,
@@ -670,16 +671,16 @@ app.post("/coolsongs/:videoId/tags", async(req, res) => {
  // -------- Route Artistes ----------------------- 
 // Création d'artiste
 app.post("/artists", async (req, res) => {
-    const { name_original, bio, birth_date, death_date, photo} = req.body;
+    const { stage_name, birth_name, bio, birth_date, death_date, photo} = req.body;
 
-    if (!name_original) {
-        return res.status(400).json({ error: "The original name is required." });
+    if (!stage_name) {
+        return res.status(400).json({ error: "The stage name is required." });
     }
 
     try {
         const [result] = await pool.execute(
-            "INSERT INTO artists (name_original, bio, birth_date, death_date, photo) VALUES (?, ?, ?, ?, ?)",
-            [name_original, bio, birth_date, death_date, photo]
+            "INSERT INTO artists (stage_name, birth_name, bio, birth_date, death_date, photo) VALUES (?, ?, ?, ?, ?, ?)",
+            [stage_name, birth_name, bio, birth_date, death_date, photo]
         );
         res.status(201).json({ message: "Artist added successfully.", artistId: result.insertId });
     
@@ -696,17 +697,17 @@ app.get("/artists", async(req, res) => {
 
         if (req.query.search) {
             const [result] = await pool.execute(
-                "SELECT artists.artist_id, artists.name_original, artists.photo FROM artists " +
+                "SELECT artists.artist_id, artists.stage_name, artists.photo FROM artists " +
                 "LEFT JOIN artist_aliases ON artists.artist_id = artist_aliases.artist_id " +
-                "WHERE artists.name_original LIKE ? OR artist_aliases.alias LIKE ?",
-                [`%${search}%`, `%${search}%`]
+                "WHERE artists.stage_name LIKE ? OR artist_aliases.alias LIKE ? OR artists.birth_name LIKE ?",
+                [`%${search}%`, `%${search}%`, `%${search}%`]
             )
             res.status(200).json(result);
         }
         else {
             
             const [result] = await pool.execute(
-                "SELECT artists.artist_id, artists.name_original, artists.photo FROM artists"
+                "SELECT artists.artist_id, artists.stage_name, artists.photo FROM artists"
             )
             res.status(200).json(result);
         }
@@ -749,11 +750,11 @@ app.get("/artists/:artistId/songs", async(req, res) => {
 app.put("/artists/:artistId", async(req, res) => {
     try {
         const { artistId } = req.params;
-        const { name_original, birth_date, death_date, bio, photo } = req.body;
+        const { stage_name, birth_name, birth_date, death_date, bio, photo } = req.body;
 
         const [result] = await pool.execute(
-            "UPDATE artists SET name_original = ?, birth_date = ?, death_date = ?, bio = ?, photo = ? WHERE artist_id = ?",
-            [name_original, birth_date, death_date, bio, photo, artistId]
+            "UPDATE artists SET stage_name = ?, birth_name = ?, birth_date = ?, death_date = ?, bio = ?, photo = ? WHERE artist_id = ?",
+            [stage_name, birth_name, birth_date, death_date, bio, photo, artistId]
         );
 
         if (result.affectedRows === 0) {
@@ -857,7 +858,7 @@ app.get("/artists/:artistId/featurings", async(req, res) => {
         const { artistId } = req.params;
 
         const [result] = await pool.execute(
-            "SELECT DISTINCT artists.artist_id, artists.name_original, artists.photo FROM song_artists AS sa1 JOIN song_artists AS sa2 ON sa1.video_id = sa2.video_id AND sa1.artist_id != sa2.artist_id " + 
+            "SELECT DISTINCT artists.artist_id, artists.stage_name, artists.photo FROM song_artists AS sa1 JOIN song_artists AS sa2 ON sa1.video_id = sa2.video_id AND sa1.artist_id != sa2.artist_id " + 
             "Left JOIN artists ON artists.artist_id = sa2.artist_id " +
             "WHERE sa1.artist_id = ?",
             [artistId]
@@ -875,7 +876,7 @@ app.get("/artists/:artistId/similar-artists", async(req, res) => {
         const { artistId } = req.params;
 
         const [result] = await pool.execute(
-            "SELECT DISTINCT artists.artist_id, artists.name_original, artists.photo FROM song_artists AS sa1 " +
+            "SELECT DISTINCT artists.artist_id, artists.stage_name, artists.photo FROM song_artists AS sa1 " +
             "JOIN song_tags AS st1 ON sa1.video_id = st1.video_id " +
             "JOIN song_tags AS st2 ON st1.tag_id = st2.tag_id AND st1.video_id != st2.video_id " + 
             "JOIN song_artists AS sa2 ON st2.video_id = sa2.video_id " +
