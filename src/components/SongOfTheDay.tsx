@@ -41,13 +41,12 @@ export function SongOfTheDay() {
                 >
                   {index === 0 && artist.photo ? 
                   <img
-                    src={artist.photo} 
-                    alt={artist.name_original} 
+                    src={artist.photo}  
                     className="w-7 h-7 rounded-full object-cover"
                   /> :
                   <User className="text-white/90 w-7 h-7 bg-white/60 rounded-full" />}
                   
-                  <p className="text-sm text-white/70 ">{artist.name_original}</p>
+                  <p className="text-sm text-white/70 ">{artist.stage_name}</p>
                 </Link>
               </span>
             ))}

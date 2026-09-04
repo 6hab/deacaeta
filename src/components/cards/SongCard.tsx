@@ -1,6 +1,6 @@
 export interface Artist {
   artist_id: number;
-  name_original: string;
+  stage_name: string;
   photo: string | null;
 }
 
@@ -30,7 +30,7 @@ export function SongCard(song: Readonly<SongCardProps>) {
         <p className="text-xs text-neutral-400 mt-0.5">
           {song.artists.map((artist) => (
             <div key={artist.artist_id}>
-              {artist.name_original}
+              {artist.stage_name}
             </div>
           ))}
         </p>
