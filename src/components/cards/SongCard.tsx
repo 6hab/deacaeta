@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { slugify } from "../../lib/utils";
+
 export interface Artist {
   artist_id: number;
   stage_name: string;
@@ -28,10 +31,11 @@ export function SongCard(song: Readonly<SongCardProps>) {
         </p>
 
         <p className="text-xs text-neutral-400 mt-0.5">
-          {song.artists.map((artist) => (
-            <div key={artist.artist_id}>
-              {artist.stage_name}
-            </div>
+          {song.artists.map((artist, index) => (
+            <span key={artist.artist_id}>
+              {index !== 0 && <span>, </span>}
+              <Link to={`/artist/${artist.artist_id}/${slugify(artist.stage_name)}`} className="inline-flex hover:underline">{artist.stage_name}</Link>
+            </span>
           ))}
         </p>
 
