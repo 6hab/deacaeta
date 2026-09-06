@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sparkle, User, Play } from "lucide-react";
 import { useSongOfTheDay } from "../hooks/home/useSongOfTheDay";
 import { Link } from "react-router-dom";
+import { slugify } from "../lib/utils";
 
 export function SongOfTheDay() {
   const { song, loading, error } = useSongOfTheDay();
@@ -36,7 +37,7 @@ export function SongOfTheDay() {
                 {index !== 0 && <span className="text-white/50 text-sm">feat.</span>}
                 
                 <Link 
-                  to={`/artist/${artist.artist_id}`}
+                  to={`/artist/${artist.artist_id}/${slugify(artist.stage_name)}`}
                   className="inline-flex items-center gap-2 hover:opacity-80"
                 >
                   {index === 0 && artist.photo ? 

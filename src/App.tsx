@@ -22,7 +22,7 @@ export default function App() {
         <Route path="/song/:videoId" element={<SongPage />} />
 
         <Route path="/artists" element={<ArtistsPage />} />
-        <Route path="/artist/:artistId" element={<ArtistPage />} />
+        <Route path="/artist/:artistId/:slug?" element={<ArtistPage />} />
       </Routes>
       </PlayerProvider>
     </BrowserRouter>
