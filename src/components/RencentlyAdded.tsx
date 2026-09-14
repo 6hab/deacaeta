@@ -3,7 +3,7 @@ import { useRecentlyAdded } from "../hooks/home/useRecentlyAdded";
 import { Link } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
-export function RecentlyAdded() {
+export function RecentlyAdded({ variant }: { variant: "row" | "list" } ) {
   const { songs, loading, error } = useRecentlyAdded();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -32,6 +32,44 @@ export function RecentlyAdded() {
   if (loading) return null;
   if (error) return null;
   if (songs.length === 0) return null;
+
+
+if (variant === "list") {
+  return (
+    <div>
+      <div className="flex gap-2 text-white font-semibold mb-3 items-center">
+        <Clock size={16} />
+        Recently added
+      </div>
+
+      {songs.map((song) => (
+        <div key={song.video_id}>
+          <div className="flex items-center gap-3 bg-black/50 rounded-lg mb-2 p-3">
+            <Link to={`/song${song.video_id}/`} className="shrink">
+              <img src={song.thumbnail} className="w-16 h-16 object-cover rounded-lg"/>
+            </Link>
+
+            <div className="min-w-0">
+              <Link to={`/song/${song.video_id}`}>
+                <p className="text-white/80 text-sm hover:text-white truncate">{song.title}</p>
+              </Link>
+
+              <div className="flex gap-2 mt-2">
+              {song.tags.map((tag) => (
+                <span key={song.video_id} className="text-white/90 text-xs bg-white/20 rounded-full px-2 py-1">
+                  {tag}
+                </span>
+              ))}
+            </div>
+            </div>
+
+            
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
   return (
     <div className="py-8 px-2">
