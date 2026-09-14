@@ -1,6 +1,8 @@
 import { Header } from "../components/Header";
 import { SongOfTheDay } from "../components/SongOfTheDay";
 import { RecentlyAdded } from "../components/RencentlyAdded";
+import { Top10Viewed } from "../components/Top10Viewed";
+
 
 export function Home() {
 
@@ -12,17 +14,17 @@ export function Home() {
       <div className="px-5 py-5">
 
         <div className="flex flex-col items-center md:flex-row md:items-start md:justify-center gap-6 max-w-7xl mx-auto">
-          <div className="">
-            <SongOfTheDay/>
-          </div>
-          
+          <SongOfTheDay />
+          <Top10Viewed variant="list"/>
+
         </div>
 
         <div>
             <div className="">
-              <RecentlyAdded/>
+              <RecentlyAdded variant="list"/>
             </div>
-
+            
+          <Top10Viewed variant="grid" />
           </div>
       </div>
 
