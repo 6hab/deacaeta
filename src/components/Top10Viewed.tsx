@@ -19,7 +19,7 @@ export function Top10Viewed({ variant }: { variant: "list" | "grid" }) {
   if (variant === "grid") {
     return (
       <div>
-        <div className="flex text-white items-center justify-between mb-2 px-5">
+        <div className="flex text-white font-semibold items-center justify-between mb-2 px-5">
           <div className="flex items-center gap-1">
             <Eye size={16} />
             Most viewed
@@ -51,7 +51,7 @@ export function Top10Viewed({ variant }: { variant: "list" | "grid" }) {
 
   return (
     <div>
-      <div className="flex text-white items-center gap-1 mb-2">
+      <div className="flex text-white font-semibold items-center gap-1 mb-2">
         <Eye size={16} />
         Most viewed
       </div>
@@ -60,7 +60,7 @@ export function Top10Viewed({ variant }: { variant: "list" | "grid" }) {
           <div className="flex items-center gap-3 bg-black/50 rounded-lg mb-2 p-1">
             <span className="text-white/50 font-semibold w-4 text-right">{index + 1}</span>
               <Link to={`/song/${song.video_id}`} className="shrink-0">
-              <img src={song.thumbnail} alt="thumbnail" className="w-14 h-14 rounded-lg object-cover"/>
+              <img src={song.thumbnail} className="w-16 h-16 rounded-lg object-cover"/>
               </Link>
 
               <div className="min-w-0">
