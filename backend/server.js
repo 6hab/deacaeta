@@ -179,7 +179,7 @@ async function syncSongs() {
 async function ensureFreshData() {
     const [row] = await pool.execute("SELECT last_fetch_time FROM cache_meta WHERE id = 1;");
     
-    if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 * 2)) {
+    if (row.length === 0 || (Date.now() - row[0]?.last_fetch_time?.getTime() >= 1000 * 60 * 60 * 2)) {  // 2h
         try {
             await syncSongs();
         } catch (error) {
