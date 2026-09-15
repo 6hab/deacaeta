@@ -93,24 +93,23 @@ if (variant === "list") {
 
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden [scrollbar-none] gap-2"
+          className="flex overflow-x-auto overscroll-x-contain [&::-webkit-scrollbar]:hidden [scrollbar-none] snap-x snap-mandatory gap-2"
         >
           {songs.map((song) => (
-            <div key={song.video_id} className="shrink-0 w-49 md:w-57">
+            <div key={song.video_id} className="shrink-0 w-49 md:w-57 snap-start">
               <Link
                 to={`/song/${song.video_id}`}
-                className="w-46 md:w-54 aspect-video rounded-lg group overflow-hidden block mb-2"
+                className="aspect-video rounded-lg group overflow-hidden block mb-2"
               >
                 <img
                   src={song.thumbnail}
-                  alt="thumbnail"
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                 />
               </Link>
 
               <Link
                 to={`/song/${song.video_id}`}
-                className="block w-46 md:w-54"
+                className="block"
               >
                 <p
                   title={song.title}
