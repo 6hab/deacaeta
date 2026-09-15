@@ -19,7 +19,7 @@ export function Top10Viewed({ variant }: { variant: "list" | "grid" }) {
   if (variant === "grid") {
     return (
       <div>
-        <div className="flex text-white font-semibold items-center justify-between mb-2 px-5">
+        <div className="flex text-white font-semibold items-center justify-between mb-3 px-5">
           <div className="flex items-center gap-1">
             <Eye size={16} />
             Most viewed
@@ -51,16 +51,20 @@ export function Top10Viewed({ variant }: { variant: "list" | "grid" }) {
 
   return (
     <div>
-      <div className="flex text-white font-semibold items-center gap-1 mb-2">
-        <Eye size={16} />
-        Most viewed
+      <div className="text-white font-semibold mb-3">
+        <Link to={"/top"} className="inline-flex items-center gap-2">
+          <Eye size={16} />
+          Most viewed
+        </Link>
+        
       </div>
+
       {topSongs.map((song, index) => (
         <div key={song.video_id}>
           <div className="flex items-center gap-3 bg-black/50 rounded-lg mb-2 p-1">
             <span className="text-white/50 font-semibold w-4 text-right">{index + 1}</span>
               <Link to={`/song/${song.video_id}`} className="shrink-0">
-              <img src={song.thumbnail} className="w-16 h-16 rounded-lg object-cover"/>
+              <img src={song.thumbnail} className="w-20 h-20 rounded-lg object-cover"/>
               </Link>
 
               <div className="min-w-0">
@@ -76,7 +80,7 @@ export function Top10Viewed({ variant }: { variant: "list" | "grid" }) {
 
       <div>
         <Link to={"/top"} className="text-white/70 hover:text-white inline-flex items-center gap-0.5">
-          <p className="">View all</p>
+          <p>View all</p>
           <ChevronRight size={16} className="translate-y-0"/>
         </Link>
         
