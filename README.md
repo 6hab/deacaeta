@@ -1,3 +1,7 @@
+# Etat actuel de Deacaeta
+
+Le projet est en cours de développement.
+
 ## Page d'accueil
 
 ### Grand écran 
