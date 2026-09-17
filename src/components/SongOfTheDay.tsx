@@ -18,7 +18,7 @@ export function SongOfTheDay() {
         className="absolute inset-0 w-full h-full object-cover blur scale-110"
       />
 
-      <div className="absolute inset-0  bg-black/10" />
+      <div className="absolute inset-0  bg-black/30" />
 
       <div className="relative p-5">
         <div className="w-full">          
