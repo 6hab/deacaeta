@@ -1,16 +1,23 @@
-# Etat actuel de Deacaeta
+# Deacaeta
 
-Le projet est en cours de développement.
+Voici l'état actuel du projet deacaeta, c'est toujours en cours de développement.
 
-## Page d'accueil
+## Démonstration
 
-### Grand écran 
+![Demo](videos/demonstration.mp4)
+
+
+## Captures d'écran
+
+### Page d'accueil
+
+#### Grand écran 
 
 ![Accueil - grand écran](screenshots/home/home1.png)
 
 ![Accueil - grand écran](screenshots/home/home2.png)
 
-### Petit écran
+#### Petit écran
 
 ![Accueil - petit écran](screenshots/home/home3.png)
 
@@ -18,12 +25,12 @@ Le projet est en cours de développement.
 
 ![Accueil - petit écran](screenshots/home/home5.png)
 
-## Page de découverte
+### Page de découverte
 
-### Grand écran
+#### Grand écran
 
 ![Découverte - grand écran](screenshots/discover/discover1.png)
 
-### Petit écran
+#### Petit écran
 
 ![Découverte - petit écran](screenshots/discover/discover2.png)
