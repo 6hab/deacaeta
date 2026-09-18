@@ -216,7 +216,7 @@ export function Background() {
         console.error(err);
       }
     };
-    canvas.addEventListener("click", handleClick);
+    window.addEventListener("click", handleClick);
 
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -227,7 +227,7 @@ export function Background() {
 
   return (
     <>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full -z-10" />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full -z-10 pointer-events-none" />
       {collectedSongs.length > 0 && (
         <button
           onClick={(e) => {
