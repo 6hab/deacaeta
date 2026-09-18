@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from "react";
-import { Music4 } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { useCollectedSongs } from "../contexts/CollectedSongsContext";
 
 const musicVideosIds = [
   "k85mRPqvMbE", // Crazy Frog - Axel F (Official Video)
   "-SyBR-M2YvU", // LE TIGRE - DECEPTACON
   "QgFX80N34Fc", // Lazy Confessions
   "xfeys7Jfnx8", // Nice guys
-
 
   "Uw_hZfH5Ukc", // 9MM x LOLI SHIGURE UI
   "jr478w--dpE", // 3 random make an awesome song, yt channel : Jaime Maldonado
@@ -26,11 +25,11 @@ type FlyingNote = {
   videoId: string;
   shape: string;
   color: string;
-  trail: {x: number, y: number}[];
+  trail: { x: number; y: number }[];
   trailCounter: number;
 };
 
-type SongDetails = {
+export type SongDetails = {
   video_id: string;
   title: string;
   uploader: string;
@@ -39,27 +38,9 @@ type SongDetails = {
   artist: string | null;
 };
 
-export function Background() {
+export function FlyingNotesCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [collectedSongs, setCollectedSongs] = useState<SongDetails[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const drawerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isDrawerOpen) return;
-
-    const handleClicksOutside = (e: MouseEvent) => {
-      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
-        setIsDrawerOpen(false);
-      }
-    };
-
-    document.addEventListener("click", handleClicksOutside);
-    return () => {
-      document.removeEventListener("click", handleClicksOutside);
-    };
-  }, [isDrawerOpen]);
+  const { setCollectedSongs } = useCollectedSongs();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,8 +49,8 @@ export function Background() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const header = document.querySelector("header")
-    const headerHeight = header ? header.offsetHeight : 0
+    const header = document.querySelector("header");
+    const headerHeight = header ? header.offsetHeight : 0;
 
     const handleResize = () => {
       canvas.width = window.innerWidth;
@@ -100,10 +81,11 @@ export function Background() {
           const shape =
             noteShapes[Math.floor(Math.random() * noteShapes.length)];
 
-          const hue = Math.floor(Math.random() * 360)
-          const color = `hsl(${hue}, 80%, 65%)`
+          const hue = Math.floor(Math.random() * 360);
+          const color = `hsl(${hue}, 80%, 65%)`;
 
-          const startY = headerHeight + Math.random() * (canvas.height - headerHeight)
+          const startY =
+            headerHeight + Math.random() * (canvas.height - headerHeight);
 
           currentFlyingNotes.push({
             x: -50,
@@ -114,7 +96,7 @@ export function Background() {
             shape,
             color,
             trailCounter: 0,
-            trail: [{x: -50, y: startY}],
+            trail: [{ x: -50, y: startY }],
           });
         }
 
@@ -126,20 +108,20 @@ export function Background() {
       currentFlyingNotes.forEach((note) => {
         note.x += note.vx;
         note.y += note.vy;
-        note.trailCounter += 1
+        note.trailCounter += 1;
 
         if (note.y < headerHeight) {
-          note.vy *= -1
+          note.vy *= -1;
         }
 
         if (note.trailCounter > 10) {
-          note.trail.push({x: note.x, y: note.y})
+          note.trail.push({ x: note.x, y: note.y });
 
           if (note.trail.length > 5) {
-            note.trail.shift()
+            note.trail.shift();
           }
 
-          note.trailCounter = 0
+          note.trailCounter = 0;
         }
       });
 
@@ -151,26 +133,25 @@ export function Background() {
     // Notes filantes
     const drawFlyingNotes = () => {
       currentFlyingNotes.forEach((note) => {
-
         note.trail.forEach((pos, index) => {
-          const opacity = index / note.trail.length
-          ctx.globalAlpha = opacity
+          const opacity = index / note.trail.length;
+          ctx.globalAlpha = opacity;
 
           // Design de la trainée des notes
-          ctx.shadowBlur = 16
-          ctx.shadowColor = note.color
+          ctx.shadowBlur = 16;
+          ctx.shadowColor = note.color;
           ctx.beginPath();
-          ctx.font = "18px sans-serif"
-          ctx.fillStyle = note.color
+          ctx.font = "18px sans-serif";
+          ctx.fillStyle = note.color;
           ctx.fillText(note.shape, pos.x, pos.y);
           ctx.fill();
         });
-        
+
         // Design des notes de musiques
-        ctx.font = "20px sans-serif"
-        ctx.fillStyle = note.color
-        ctx.fillText(note.shape, note.x, note.y, canvas.width)
-        ctx.globalAlpha = 1
+        ctx.font = "20px sans-serif";
+        ctx.fillStyle = note.color;
+        ctx.fillText(note.shape, note.x, note.y, canvas.width);
+        ctx.globalAlpha = 1;
       });
     };
 
@@ -223,64 +204,14 @@ export function Background() {
       window.removeEventListener("click", handleClick);
       cancelAnimationFrame(animationId);
     };
-  }, []);
+  }, [setCollectedSongs]);
 
   return (
     <>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full -z-10 pointer-events-none" />
-      {collectedSongs.length > 0 && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsDrawerOpen((prev) => !prev);
-          }}
-          className="bg-neutral-900 fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full border border-neutral-600 flex items-center justify-center hover:bg-neutral-800 cursor-pointer"
-        >
-          <Music4 size={15} className="" />
-
-          <span className="bg-cyan-500/60 absolute -top-1 -left-1 w-5 h-5 rounded-full text-xs flex items-center justify-center">
-            {collectedSongs.length}
-          </span>
-        </button>
-      )}
-
-      {isDrawerOpen && (
-        <div
-          ref={drawerRef}
-          className="fixed z-50 bg-black/90 w-60 max-h-70 overflow-y-auto bottom-25 right-4 rounded"
-        >
-          <h2 className="flex text-amber-500/90 justify-center gap-1 mb-1 mt-2">
-            {" "}
-            <Music4 size={19} /> Collected notes <Music4 size={19} />
-          </h2>
-
-          {collectedSongs.map((song) => (
-            <a
-              key={song.video_id}
-              href={`https://www.youtube.com/watch?v=${song.video_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-1 py-2 hover:bg-neutral-800"
-            >
-              <img
-                src={song.thumbnail}
-                alt="thumbnail"
-                className="w-15 h-15 object-cover"
-              />
-
-              <div className="flex flex-col min-w-0">
-                <p className="text-white text-sm truncate">{song.title}</p>
-                <p className="text-neutral-300 text-xs">
-                  {song.artist ?? song.uploader}
-                </p>
-                <p className="text-neutral-400 italic">
-                  {song.video_published_at.slice(0, 4)}
-                </p>
-              </div>
-            </a>
-          ))}
-        </div>
-      )}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full -z-10 pointer-events-none"
+      />
     </>
   );
 }
