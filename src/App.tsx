@@ -9,12 +9,17 @@ import { SongPage } from "./pages/SongPage";
 
 import { ArtistsPage } from "./pages/ArtistsPage";
 import { ArtistPage } from "./pages/ArtistPage";
+import { DarkMidnightMeshBackground } from "./components/opensourceui/background-gradient/DarkMidnightMeshBackground";
 
 export default function App() {
   return (
     <BrowserRouter>
       <PlayerProvider>
-      <Background />
+
+      <DarkMidnightMeshBackground className="fixed inset-0 -z-10">
+        <Background />
+      </DarkMidnightMeshBackground>
+      
       <Routes>
         <Route path="/" element={<Home />} />
 

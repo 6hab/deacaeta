@@ -86,11 +86,6 @@ export function Background() {
 
     let nextWaveIn = 1;
 
-    // Couleur du background
-    const backgroundGradiant = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    backgroundGradiant.addColorStop(0, "#0f1726");
-    backgroundGradiant.addColorStop(1, "#0a0f19");
-
     const noteShapes = ["♩", "♪", "♫", "♬"];
 
     const trySpawnWave = () => {
@@ -182,9 +177,6 @@ export function Background() {
     const frame = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = backgroundGradiant;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       trySpawnWave();
       updateFlyingNotes();
       drawFlyingNotes();
@@ -235,7 +227,7 @@ export function Background() {
 
   return (
     <>
-      <canvas ref={canvasRef} className="fixed inset-0 w-full h-full -z-10" />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full -z-10" />
       {collectedSongs.length > 0 && (
         <button
           onClick={(e) => {
