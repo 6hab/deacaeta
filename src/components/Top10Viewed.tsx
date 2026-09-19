@@ -31,12 +31,12 @@ export function Top10Viewed({ variant }: { variant: "list" | "grid" }) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 px-5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 px-2">
           {topSongs.map((song, index) => (
             <div key={song.video_id} className="relative h-full">
               <span className="absolute z-10 text-white bg-mauve-700/70 rounded-full top-2 left-2 w-7 h-7 flex items-center justify-center font-semibold">{index + 1}</span>
               
-              <span className="absolute z-10 text-white/50 text-xs bg-black/60 rounded-full right-2 bottom-2 flex items-center px-2 py-0.5 gap-1">
+              <span className="absolute z-10 text-white/90 text-xs bg-gray-700/90 rounded-full right-2 top-2 flex items-center px-2 py-0.5 gap-1">
                 <Eye size={12} />
                 {formatViews(song.view_count)}
               </span>

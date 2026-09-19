@@ -14,7 +14,7 @@ export function Home() {
       {/* Body */}
       <div className="px-5 py-5">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_320px] gap-5 items-start">
-          <div className="flex flex-col items-center md:items-stretch gap-5 pr-10 pl-10 min-w-0">
+          <div className="flex flex-col items-center md:items-stretch gap-5 md:pr-10 md:pl-10 min-w-0">
           <SongOfTheDay />
           
           <div className="w-full hidden max-md:block">
